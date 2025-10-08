@@ -45,4 +45,27 @@ interface UserInterface
      * @access  public
      */
     public function deleteUser($id);
+
+    /**
+     * Find current user info
+     * 
+     * @param   integer     $id
+     * 
+     * @method  GET api/user/find-myself
+     * @access  public
+     */
+    public function findMyself($id);
+
+    /**
+     * Find all users except current user
+     * 
+     * @param   integer     $currentUserId
+     * @param   string      $keyword
+     * @param   integer     $page
+     * @param   integer     $perPage
+     * 
+     * @method  GET api/user/find-except-me?keyword=$keyword
+     * @access  public
+     */
+    public function findExceptMe($currentUserId, $keyword = null, $page = 1, $perPage = 10);
 }

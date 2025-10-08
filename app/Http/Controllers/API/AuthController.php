@@ -9,10 +9,12 @@ use App\Http\Requests\SendEmailRequest;
 use App\Http\Requests\VerifyOtpRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Models\User;
 use App\Models\PasswordResetOtp;
 use App\Mail\OtpMail;
 use App\Traits\ResponseAPI;
+use App\Interfaces\UserInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -22,6 +24,13 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 class AuthController extends Controller
 {
     use ResponseAPI;
+
+    protected $userRepository;
+
+    public function __construct(UserInterface $userRepository)
+    {
+        $this->userRepository = $userRepository;
+    }
 
     /**
      * Register new user
@@ -96,6 +105,7 @@ class AuthController extends Controller
                     'fullName' => $user->full_name,
                     'email' => $user->email,
                     'phone' => $user->phone,
+                    'avatar' => $user->avatar,
                 ],
                 'token' => $token,
                 'token_type' => 'Bearer',
@@ -168,6 +178,7 @@ class AuthController extends Controller
                     'fullName' => $user->full_name,
                     'email' => $user->email,
                     'phone' => $user->phone,
+                    'avatar' => $user->avatar,
                 ],
                 'token' => $token,
                 'token_type' => 'Bearer',
@@ -309,6 +320,7 @@ class AuthController extends Controller
                     'fullName' => $user->full_name,
                     'email' => $user->email,
                     'phone' => $user->phone,
+                    'avatar' => $user->avatar,
                 ],
                 'message' => 'Mật khẩu đã được cập nhật thành công',
             ]);
@@ -319,6 +331,104 @@ class AuthController extends Controller
             return $this->error('Token không hợp lệ', 401);
         } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
             return $this->error('Token không được cung cấp', 401);
+        } catch (\Exception $e) {
+            return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Update user profile (requires authentication)
+     *
+     * @param UpdateProfileRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateProfile(UpdateProfileRequest $request)
+    {
+        try {
+            // Lấy user hiện tại từ JWT token
+            $user = Auth::guard('api')->user();
+
+            // Chuẩn bị dữ liệu cập nhật
+            $updateData = [];
+            
+            if ($request->has('fullName')) {
+                $updateData['full_name'] = $request->fullName;
+            }
+            
+            if ($request->has('email')) {
+                $updateData['email'] = $request->email;
+            }
+            
+            if ($request->has('phone')) {
+                $updateData['phone'] = $request->phone;
+            }
+            
+            if ($request->has('avatar')) {
+                $updateData['avatar'] = $request->avatar;
+            }
+
+            // Cập nhật thông tin user
+            $user->update($updateData);
+
+            // Refresh user data
+            $user->refresh();
+
+            return $this->success('Cập nhật thông tin thành công', [
+                'user' => [
+                    'id' => $user->id,
+                    'fullName' => $user->full_name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'avatar' => $user->avatar,
+                ],
+                'updated_fields' => array_keys($updateData),
+                'updated_at' => $user->updated_at->toDateTimeString(),
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Find current user info (requires authentication)
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function findMyself()
+    {
+        try {
+            // Lấy user hiện tại từ JWT token
+            $user = Auth::guard('api')->user();
+            
+            // Sử dụng repository để lấy thông tin user
+            return $this->userRepository->findMyself($user->id);
+
+        } catch (\Exception $e) {
+            return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Find all users except current user (requires authentication)
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function findExceptMe(Request $request)
+    {
+        try {
+            // Lấy user hiện tại từ JWT token
+            $user = Auth::guard('api')->user();
+            
+            // Lấy parameters từ request
+            $keyword = $request->get('keyword');
+            $page = (int) $request->get('page', 1);
+            $perPage = (int) $request->get('per_page', 10);
+            
+            // Sử dụng repository để lấy danh sách users
+            return $this->userRepository->findExceptMe($user->id, $keyword, $page, $perPage);
+
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }

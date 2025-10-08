@@ -25,12 +25,27 @@ Route::prefix('auth')->group(function () {
 // User routes (cần JWT token)
 Route::prefix('user')->middleware('auth:api')->group(function () {
     Route::patch('change-password', 'API\AuthController@changePassword');
+    Route::get('find-myself', 'API\AuthController@findMyself');
+    Route::get('find-except-me', 'API\AuthController@findExceptMe');
 });
+
+// User profile route (cần JWT token)
+Route::patch('user', 'API\AuthController@updateProfile')->middleware('auth:api');
 
 // File upload routes (cần JWT token)
 Route::prefix('files')->middleware('auth:api')->group(function () {
     Route::post('upload', 'API\FileController@upload');
     Route::delete('delete', 'API\FileController@delete');
+});
+
+// Group routes (cần JWT token)
+Route::prefix('group')->middleware('auth:api')->group(function () {
+    Route::get('/', 'API\GroupController@getList');
+    Route::get('detail/{id}', 'API\GroupController@getDetail');
+    Route::get('{id}', 'API\GroupController@getById');
+    Route::post('/', 'API\GroupController@create');
+    Route::put('{id}', 'API\GroupController@update');
+    Route::delete('{id}', 'API\GroupController@delete');
 });
 
 Route::resource('users', 'API\UserController');
