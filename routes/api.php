@@ -45,6 +45,7 @@ Route::prefix('group')->middleware('auth:api')->group(function () {
     Route::get('{id}', 'API\GroupController@getById');
     Route::post('/', 'API\GroupController@create');
     Route::put('{id}', 'API\GroupController@update');
+    Route::patch('update-group/{groupId}', 'API\GroupController@updateGroup');
     Route::delete('{id}', 'API\GroupController@delete');
 });
 
