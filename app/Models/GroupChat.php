@@ -17,17 +17,16 @@ class GroupChat extends Model
         'created_by',
         'is_private',
         'avatar',
+        'is_seen',
     ];
 
     protected $casts = [
         'is_private' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
+        'is_seen' => 'boolean',
     ];
 
     /**
-     * Get the user who created this group
+     * Get the user who created the group chat
      */
     public function creator()
     {
@@ -35,20 +34,10 @@ class GroupChat extends Model
     }
 
     /**
-     * Get group members through the pivot table group_chat_user
+     * Get the members of the group chat
      */
     public function members()
     {
-        return $this->belongsToMany(User::class, 'group_chat_user', 'group_chat_id', 'user_id')
-                    ->withPivot('is_admin')
-                    ->withTimestamps();
-    }
-
-    /**
-     * Get avatar URL
-     */
-    public function getAvatarUrlAttribute()
-    {
-        return $this->avatar ? url('storage/' . $this->avatar) : null;
+        return $this->belongsToMany(User::class, 'group_chat_user', 'group_chat_id', 'user_id');
     }
 }

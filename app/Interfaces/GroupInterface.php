@@ -77,4 +77,76 @@ interface GroupInterface
      * @access  public
      */
     public function updateGroupName($groupId, $name);
+
+    /**
+     * Get group activity detail
+     * 
+     * @param   integer     $activityId
+     * 
+     * @method  GET api/group/activity/detail/{activityId}
+     * @access  public
+     */
+    public function getActivityDetail($activityId);
+
+    /**
+     * Create group activity
+     * 
+     * @param   array       $data
+     * 
+     * @method  POST api/group/activity
+     * @access  public
+     */
+    public function createActivity($data);
+
+    /**
+     * Update group activity
+     * 
+     * @param   integer     $activityId
+     * @param   array       $data
+     * 
+     * @method  PATCH api/group/update-activity/{activityId}
+     * @access  public
+     */
+    public function updateActivity($activityId, $data);
+
+    /**
+     * Add member to group
+     * 
+     * @param   integer     $groupId
+     * @param   array       $data
+     * 
+     * @method  POST api/group/add-member/{groupId}
+     * @access  public
+     */
+    public function addMember($groupId, $data);
+
+    /**
+     * Finish group (update status to done)
+     * 
+     * @param   integer     $groupId
+     * 
+     * @method  PATCH api/group/finish-group/{groupId}
+     * @access  public
+     */
+    public function finishGroup($groupId);
+
+    /**
+     * Create group
+     * 
+     * @param   array       $data
+     * 
+     * @method  POST api/group
+     * @access  public
+     */
+    public function createGroup($data);
+
+    /**
+     * Get group report
+     * 
+     * @param   integer     $groupId
+     * 
+     * @method  GET api/group/get-group-report/{groupId}
+     * @access  public
+     */
+    public function getGroupReport($groupId);
 }

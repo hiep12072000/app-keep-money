@@ -165,7 +165,7 @@ class UserRepository implements UserInterface
                 'data' => $usersData,
                 'totalPage' => $totalPage,
                 'total' => $total,
-                'currentPage' => $page,
+                'currentPage' => (int) $page,
             ];
 
             return $this->success("Lấy danh sách thông tin người dùng thành công", $responseData);

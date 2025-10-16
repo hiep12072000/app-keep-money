@@ -39,4 +39,20 @@ class TripSpendingHistory extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    /**
+     * Get the payers for this spending history
+     */
+    public function payers()
+    {
+        return $this->hasMany(TripPayer::class, 'trip_spending_history_id');
+    }
+
+    /**
+     * Get the users involved in this spending history
+     */
+    public function spendingUsers()
+    {
+        return $this->hasMany(TripSpendingHistoryUser::class, 'trip_spending_history_id');
+    }
 }
