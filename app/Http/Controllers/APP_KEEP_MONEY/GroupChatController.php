@@ -157,14 +157,17 @@ class GroupChatController extends Controller
     public function getListGroupChat(Request $request)
     {
         try {
-            // Validate request data
-            $data = $request->validate([
-                'pageNumber' => 'required|integer|min:1',
-            ]);
+            // Validate và convert page
+            $page = $request->get('page', 1);
+            $page = is_numeric($page) ? (int) $page : 1;
+            $page = max(1, $page); // Đảm bảo page >= 1
 
-            return $this->groupChatRepository->getListGroupChat($data['pageNumber']);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error('Không thể xác thực: ' . implode(', ', $e->validator->errors()->all()), 422);
+            // Validate và convert per_page
+            $perPage = $request->get('per_page', 10);
+            $perPage = is_numeric($perPage) ? (int) $perPage : 10;
+            $perPage = max(1, min(100, $perPage)); // Đảm bảo 1 <= per_page <= 100
+
+            return $this->groupChatRepository->getListGroupChat($page, $perPage);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }

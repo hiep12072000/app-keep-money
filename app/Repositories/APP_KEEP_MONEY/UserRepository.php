@@ -13,11 +13,48 @@ class UserRepository implements UserInterface
     // Use ResponseAPI Trait in this repository
     use ResponseAPI;
 
-    public function getAllUsers()
+    public function getAllUsers($page = 1, $perPage = 10)
     {
         try {
-            $users = User::all();
-            return $this->success("Tất cả người dùng", $users);
+            // Query builder để lấy users
+            $query = User::query();
+
+            // Đếm tổng số records
+            $total = $query->count();
+
+            // Tính toán pagination
+            $totalPage = ceil($total / $perPage);
+            $offset = ($page - 1) * $perPage;
+
+            // Lấy dữ liệu với pagination
+            $users = $query->orderBy('created_at', 'desc')
+                          ->offset($offset)
+                          ->limit($perPage)
+                          ->get();
+
+            // Format response theo yêu cầu
+            $usersData = $users->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'fullName' => $user->full_name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'createdAt' => $user->created_at->format('Y-m-d\TH:i:s'),
+                    'avatar' => $user->avatar ? url('storage/' . $user->avatar) : null,
+                    'tokenFcm' => $user->token_fcm,
+                    'isOnline' => $user->is_online ?? false,
+                    'lastOnlineAt' => $user->last_online_at ? $user->last_online_at->format('Y-m-d\TH:i:s.u') : null,
+                ];
+            });
+
+            $responseData = [
+                'data' => $usersData,
+                'totalPage' => $totalPage,
+                'total' => $total,
+                'currentPage' => (int) $page,
+            ];
+
+            return $this->success("Lấy danh sách tất cả người dùng thành công", $responseData);
         } catch(\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode());
         }

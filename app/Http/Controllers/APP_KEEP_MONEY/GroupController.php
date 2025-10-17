@@ -344,7 +344,17 @@ class GroupController extends Controller
             $startDate = $request->query('startDate');
             $endDate = $request->query('endDate');
 
-            return $this->groupRepository->getGroupReport($groupId, $startDate, $endDate);
+            // Validate và convert page
+            $page = $request->get('page', 1);
+            $page = is_numeric($page) ? (int) $page : 1;
+            $page = max(1, $page); // Đảm bảo page >= 1
+
+            // Validate và convert per_page
+            $perPage = $request->get('per_page', 10);
+            $perPage = is_numeric($perPage) ? (int) $perPage : 10;
+            $perPage = max(1, min(100, $perPage)); // Đảm bảo 1 <= per_page <= 100
+
+            return $this->groupRepository->getGroupReport($groupId, $startDate, $endDate, $page, $perPage);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -390,6 +400,30 @@ class GroupController extends Controller
 
             $id = (int) $id;
             return $this->groupRepository->delete($id);
+        } catch (\Exception $e) {
+            return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function updateAdvance(Request $request, $groupId){
+        try {
+            // Validate that $id is numeric
+            if (!is_numeric($groupId)) {
+                return $this->error('ID phải là số', 400);
+            }
+
+            $groupId = (int) $groupId;
+
+            $userIds = $request->userIds;
+
+            if(count($userIds) < 1){
+                return $this->error('Bạn chưa chọn thành viên', 400);
+            }
+
+            if(!isset($request->advance) && is_numeric($request->advance) && $request->advance < 0){
+                return $this->error('Số tiền không hợp lệ', 400);
+            }
+            return $this->groupRepository->updateAdvance($request, $groupId);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }

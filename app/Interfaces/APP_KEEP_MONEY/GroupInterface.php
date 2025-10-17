@@ -7,6 +7,7 @@ use App\Interfaces\GET;
 use App\Interfaces\PATCH;
 use App\Interfaces\POST;
 use App\Interfaces\PUT;
+use Illuminate\Http\Request;
 
 interface GroupInterface
 {
@@ -150,9 +151,14 @@ interface GroupInterface
      * Get group report
      *
      * @param   integer     $groupId
+     * @param   string|null $startDate
+     * @param   string|null $endDate
+     * @param   int         $page
+     * @param   int         $perPage
      *
      * @method  GET api/group/get-group-report/{groupId}
      * @access  public
      */
-    public function getGroupReport($groupId);
+    public function getGroupReport($groupId, $startDate = null, $endDate = null, $page = 1, $perPage = 10);
+    public function updateAdvance(Request $request, $groupId);
 }

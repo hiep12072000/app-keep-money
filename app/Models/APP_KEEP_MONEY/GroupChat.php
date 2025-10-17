@@ -38,6 +38,6 @@ class GroupChat extends Model
      */
     public function members()
     {
-        return $this->belongsToMany(User::class, 'group_chat_user', 'group_chat_id', 'user_id');
+        return $this->belongsToMany(User::class, 'akm_group_chat_user', 'group_chat_id', 'user_id');
     }
 }

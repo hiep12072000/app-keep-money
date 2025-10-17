@@ -11,6 +11,7 @@ use App\Models\APP_KEEP_MONEY\User;
 use App\Traits\ResponseAPI;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use mysql_xdevapi\Table;
 
 class GroupRepository implements GroupInterface
 {
@@ -46,13 +47,11 @@ class GroupRepository implements GroupInterface
 
                 // Lấy avatar URLs từ trip members
                 $avatarUrls = [];
-                $maxAvatars = 5; // Giới hạn 5 avatars như trong response mẫu
 
                 if ($trip->members && $trip->members->count() > 0) {
-                    $memberCount = min($trip->members->count(), $maxAvatars);
 
-                    for ($i = 0; $i < $maxAvatars; $i++) {
-                        if ($i < $memberCount) {
+                    for ($i = 0; $i < $trip->members->count(); $i++) {
+                        if ($i < $trip->members->count()) {
                             $member = $trip->members[$i];
                             $avatarUrls[] = $member->avatar ? url('storage/' . $member->avatar) : null;
                         } else {
@@ -61,7 +60,7 @@ class GroupRepository implements GroupInterface
                     }
                 } else {
                     // Nếu không có members, tạo array với null values
-                    $avatarUrls = array_fill(0, $maxAvatars, null);
+                    $avatarUrls = array_fill(0, $trip->members->count(), null);
                 }
 
                 $groupedData[] = [
@@ -435,6 +434,11 @@ class GroupRepository implements GroupInterface
                 return $this->error("Không tìm thấy nhóm", 404);
             }
 
+            $userIdCurrent = Auth::user()->id;
+            if($userIdCurrent != $trip->key_member_id){
+                return $this->error("Bạn không phải là người tạo nhóm", 400);
+            }
+
             // Calculate total amount from payers (array)
             $totalAmount = 0;
             foreach ($data['senders'] as $payer) {
@@ -517,6 +521,11 @@ class GroupRepository implements GroupInterface
             $trip = Trip::find($data['groupId']);
             if (!$trip) {
                 return $this->error("Không tìm thấy ID nhóm", 404);
+            }
+
+            $userIdCurrent = Auth::user()->id;
+            if($userIdCurrent != $trip->key_member_id){
+                return $this->error("Bạn không phải là người tạo nhóm", 400);
             }
 
             // Calculate total amount from payers (array) - handle null payers
@@ -623,7 +632,7 @@ class GroupRepository implements GroupInterface
             }
 
             // Check if user is already a member of the group
-            $existingMember = DB::table('trip_users')
+            $existingMember = DB::table('akm_trip_users')
                 ->where('trip_id', $groupId)
                 ->where('user_id', $userId)
                 ->first();
@@ -633,7 +642,7 @@ class GroupRepository implements GroupInterface
             }
 
             // Add user to group
-            DB::table('trip_users')->insert([
+            DB::table('akm_trip_users')->insert([
                 'trip_id' => $groupId,
                 'user_id' => $userId,
                 'advance' => null,
@@ -787,7 +796,7 @@ class GroupRepository implements GroupInterface
             //     $userName = $data['userNames'][$i];
 
             //     // Add user to group
-            //     DB::table('trip_users')->insert([
+            //     DB::table('akm_trip_users')->insert([
             //         'trip_id' => $trip->id,
             //         'user_id' => $userId,
             //         'advance' => null,
@@ -803,7 +812,7 @@ class GroupRepository implements GroupInterface
             for ($i = 0; $i < count($userNames); $i++) {
                 $userName = $userNames[$i];
 
-                $userId = DB::table('users')->insertGetId(
+                $userId = DB::table('akm_users')->insertGetId(
                     [
                         'full_name' => $userName,
                         'is_temporary' => 1,
@@ -811,7 +820,7 @@ class GroupRepository implements GroupInterface
                     ]
                 );
                 // Add user to group
-                DB::table('trip_users')->insert([
+                DB::table('akm_trip_users')->insert([
                     'trip_id' => $trip->id,
                     'user_id' => $userId,
                     'advance' => null,
@@ -849,7 +858,7 @@ class GroupRepository implements GroupInterface
     /**
      * Get group report
      */
-    public function getGroupReport($groupId, $startDate = null, $endDate = null)
+    public function getGroupReport($groupId, $startDate = null, $endDate = null, $page = 1, $perPage = 10)
     {
         try {
             // Validate that $groupId is numeric and positive
@@ -871,15 +880,31 @@ class GroupRepository implements GroupInterface
                 return $this->error("Không tìm thấy nhóm", 404);
             }
 
-            // Get all members of the group
-            $members = DB::table('trip_users')
-                ->where('trip_id', $groupId)
-                ->pluck('user_id')
-                ->toArray();
+            // Get all members of the group with pagination
+            $membersQuery = DB::table('akm_trip_users')
+                ->where('trip_id', $groupId);
 
-            if (empty($members)) {
-                return $this->success("Lấy thông tin thành công", []);
+            // Đếm tổng số members
+            $totalMembers = $membersQuery->count();
+
+            if ($totalMembers == 0) {
+                return $this->success("Lấy thông tin thành công", [
+                    'data' => [],
+                    'totalPage' => 0,
+                    'total' => 0,
+                    'currentPage' => (int) $page,
+                ]);
             }
+
+            // Tính toán pagination
+            $totalPage = ceil($totalMembers / $perPage);
+            $offset = ($page - 1) * $perPage;
+
+            // Lấy members với pagination
+            $members = $membersQuery->offset($offset)
+                                  ->limit($perPage)
+                                  ->pluck('user_id')
+                                  ->toArray();
 
             // Get spending history for this group with date filter
             $spendingHistoryQuery = TripSpendingHistory::where('trip_id', $groupId);
@@ -931,7 +956,14 @@ class GroupRepository implements GroupInterface
                 ];
             }
 
-            return $this->success("Lấy thông tin thành công", $reportData);
+            $responseData = [
+                'data' => $reportData,
+                'totalPage' => $totalPage,
+                'total' => $totalMembers,
+                'currentPage' => (int) $page,
+            ];
+
+            return $this->success("Lấy thông tin thành công", $responseData);
         } catch(\Exception $e) {
             $errorCode = $e->getCode();
             // Ensure error code is a valid HTTP status code
@@ -952,4 +984,38 @@ class GroupRepository implements GroupInterface
         return $d && $d->format($format) === $dateTime;
     }
 
+    public function updateAdvance($request, $groupId){
+        DB::beginTransaction();
+        try {
+            $userIds = $request->userIds;
+            $advance = $request->advance;
+
+            $userIdCurrent = Auth::user()->id;
+            $trip = Trip::find($groupId);
+
+            if($userIdCurrent != $trip->key_member_id){
+                return $this->error("Bạn không phải là người tạo nhóm", 400);
+            }
+
+
+            DB::table('akm_trip_users')
+                ->whereIn('user_id', $userIds)
+                ->where('trip_id', $groupId)
+                ->update([
+                    'advance' => $advance,
+                ]);
+
+            DB::commit();
+
+            return $this->success("Lấy thông tin thành công", $groupId);
+        }
+        catch(\Exception $e) {
+            $errorCode = $e->getCode();
+            // Ensure error code is a valid HTTP status code
+            if ($errorCode < 100 || $errorCode > 599) {
+                $errorCode = 500;
+            }
+            return $this->error($e->getMessage(), $errorCode);
+        }
+    }
 }

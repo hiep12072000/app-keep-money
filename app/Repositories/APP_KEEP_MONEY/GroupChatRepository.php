@@ -27,7 +27,7 @@ class GroupChatRepository
             $code = $this->generateUniqueCode();
 
             // Insert new link share record
-            DB::table('link_shares')->insert([
+            DB::table('akm_link_shares')->insert([
                 'group_id' => $groupId,
                 'code' => $code,
                 'created_at' => now(),
@@ -54,7 +54,7 @@ class GroupChatRepository
     {
         do {
             $code = \Illuminate\Support\Str::random(8); // Generate 8 character random string
-        } while (DB::table('link_shares')->where('code', $code)->exists());
+        } while (DB::table('akm_link_shares')->where('code', $code)->exists());
 
         return $code;
     }
@@ -66,7 +66,7 @@ class GroupChatRepository
     {
         try {
             // Find the link share with groupId and code
-            $linkShare = DB::table('link_shares')
+            $linkShare = DB::table('akm_link_shares')
                 ->where('group_id', $groupId)
                 ->where('code', $code)
                 ->first();
@@ -145,7 +145,7 @@ class GroupChatRepository
             }
 
             // Get messages for this group chat
-            $messages = DB::table('messages')
+            $messages = DB::table('akm_messages')
                 ->where('group_chat_id', $id)
                 ->orderBy('created_at', 'asc')
                 ->get();
@@ -244,22 +244,24 @@ class GroupChatRepository
     /**
      * Get list group chat with pagination
      */
-    public function getListGroupChat($pageNumber)
+    public function getListGroupChat($page = 1, $perPage = 10)
     {
         try {
-            $perPage = 10; // Số item per page
-            $offset = ($pageNumber - 1) * $perPage;
+            // Query builder để lấy group chats
+            $query = GroupChat::with(['creator', 'members']);
 
-            // Get group chats with pagination
-            $groupChats = GroupChat::with(['creator', 'members'])
-                ->orderBy('created_at', 'desc')
-                ->skip($offset)
-                ->take($perPage)
-                ->get();
+            // Đếm tổng số records
+            $total = $query->count();
 
-            // Get total count for pagination
-            $totalCount = GroupChat::count();
-            $totalPages = ceil($totalCount / $perPage);
+            // Tính toán pagination
+            $totalPage = ceil($total / $perPage);
+            $offset = ($page - 1) * $perPage;
+
+            // Lấy dữ liệu với pagination
+            $groupChats = $query->orderBy('created_at', 'desc')
+                              ->offset($offset)
+                              ->limit($perPage)
+                              ->get();
 
             // Format response data
             $formattedData = [];
@@ -291,15 +293,14 @@ class GroupChatRepository
                 ];
             }
 
-            return $this->success("Lấy danh sách nhóm chat thành công!", [
+            $responseData = [
                 'data' => $formattedData,
-                'pagination' => [
-                    'currentPage' => (int) $pageNumber,
-                    'totalPages' => $totalPages,
-                    'totalItems' => $totalCount,
-                    'perPage' => $perPage,
-                ]
-            ]);
+                'totalPage' => $totalPage,
+                'total' => $total,
+                'currentPage' => (int) $page,
+            ];
+
+            return $this->success("Lấy danh sách nhóm chat thành công!", $responseData);
         } catch(\Exception $e) {
             $errorCode = $e->getCode();
             // Ensure error code is a valid HTTP status code
@@ -341,11 +342,11 @@ class GroupChatRepository
             ]);
 
             // Delete existing members and add new ones
-            DB::table('group_chat_user')->where('group_chat_id', $groupChatId)->delete();
+            DB::table('akm_group_chat_user')->where('group_chat_id', $groupChatId)->delete();
 
             $members = [];
             foreach ($userIds as $userId) {
-                DB::table('group_chat_user')->insert([
+                DB::table('akm_group_chat_user')->insert([
                     'group_chat_id' => $groupChatId,
                     'user_id' => $userId,
                 ]);
@@ -401,7 +402,7 @@ class GroupChatRepository
             }
 
             // Check if user is already a member
-            $existingMember = DB::table('group_chat_user')
+            $existingMember = DB::table('akm_group_chat_user')
                 ->where('group_chat_id', $groupChatId)
                 ->where('user_id', $userId)
                 ->first();
@@ -411,7 +412,7 @@ class GroupChatRepository
             }
 
             // Add user to group chat
-            DB::table('group_chat_user')->insert([
+            DB::table('akm_group_chat_user')->insert([
                 'group_chat_id' => $groupChatId,
                 'user_id' => $userId,
             ]);
@@ -454,7 +455,7 @@ class GroupChatRepository
             }
 
             // Check if user is a member
-            $existingMember = DB::table('group_chat_user')
+            $existingMember = DB::table('akm_group_chat_user')
                 ->where('group_chat_id', $groupChatId)
                 ->where('user_id', $userId)
                 ->first();
@@ -464,7 +465,7 @@ class GroupChatRepository
             }
 
             // Remove user from group chat
-            DB::table('group_chat_user')
+            DB::table('akm_group_chat_user')
                 ->where('group_chat_id', $groupChatId)
                 ->where('user_id', $userId)
                 ->delete();
@@ -518,7 +519,7 @@ class GroupChatRepository
             $members = [];
             foreach ($userIds as $userId) {
                 // Add user to group chat
-                DB::table('group_chat_user')->insert([
+                DB::table('akm_group_chat_user')->insert([
                     'group_chat_id' => $groupChat->id,
                     'user_id' => $userId,
                 ]);

@@ -13,10 +13,13 @@ interface UserInterface
     /**
      * Get all users
      *
+     * @param   integer     $page
+     * @param   integer     $perPage
+     *
      * @method  GET api/users
      * @access  public
      */
-    public function getAllUsers();
+    public function getAllUsers($page = 1, $perPage = 10);
 
     /**
      * Get User By ID

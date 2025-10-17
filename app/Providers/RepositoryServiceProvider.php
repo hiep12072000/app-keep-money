@@ -20,5 +20,15 @@ class RepositoryServiceProvider extends ServiceProvider
             'App\Interfaces\APP_KEEP_MONEY\GroupInterface',
             'App\Repositories\APP_KEEP_MONEY\GroupRepository'
         );
+
+        $this->app->bind(
+            'App\Interfaces\APP_KEEP_MONEY\FriendInterface',
+            'App\Repositories\APP_KEEP_MONEY\FriendRepository'
+        );
+
+        $this->app->bind(
+            'App\Interfaces\APP_KEEP_MONEY\NotificationInterface',
+            'App\Repositories\APP_KEEP_MONEY\NotificationRepository'
+        );
     }
 }

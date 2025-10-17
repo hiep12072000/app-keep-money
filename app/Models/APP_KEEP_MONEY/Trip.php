@@ -66,7 +66,7 @@ class Trip extends Model
      */
     public function members()
     {
-        return $this->belongsToMany(User::class, 'trip_users', 'trip_id', 'user_id')
+        return $this->belongsToMany(User::class, 'akm_trip_users', 'trip_id', 'user_id')
                     ->withPivot('advance');
     }
 

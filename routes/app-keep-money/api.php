@@ -59,6 +59,9 @@ Route::prefix('group')->middleware('auth:api')->group(function () {
     // Group management routes
     Route::get('get-group-report/{groupId}', 'APP_KEEP_MONEY\GroupController@getGroupReport');
     Route::patch('finish-group/{groupId}', 'APP_KEEP_MONEY\GroupController@finishGroup');
+
+    //Update Advance
+    Route::post('update-advance/{groupId}', 'APP_KEEP_MONEY\GroupController@updateAdvance');
 });
 
 Route::resource('users', 'APP_KEEP_MONEY\UserController');
@@ -76,3 +79,21 @@ Route::prefix('group-chat')->middleware('auth:api')->group(function () {
     Route::post('invite-member/{groupChatId}/{userId}', 'APP_KEEP_MONEY\GroupChatController@inviteMember');
     Route::delete('remove-member/{groupChatId}/{userId}', 'APP_KEEP_MONEY\GroupChatController@removeMember');
 });
+
+//Friends
+Route::prefix('friend')->middleware('auth:api')->group(function () {
+    Route::get('/', 'APP_KEEP_MONEY\FriendController@getList');
+    Route::post('/', 'APP_KEEP_MONEY\FriendController@create');
+    Route::patch('update-status/{id}/{status}', 'APP_KEEP_MONEY\FriendController@updateStatus');
+});
+
+//Notifications
+Route::prefix('notifications')->middleware('auth:api')->group(function () {
+    Route::get('/', 'APP_KEEP_MONEY\NotificationController@getList');
+});
+
+//Notification (singular for seen)
+Route::prefix('notification')->middleware('auth:api')->group(function () {
+    Route::patch('seen/{id}', 'APP_KEEP_MONEY\NotificationController@seen');
+});
+
