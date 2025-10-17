@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Repositories\APP_KEEP_MONEY;
 
-use App\Models\GroupChat;
-use App\Models\User;
+use App\Models\APP_KEEP_MONEY\GroupChat;
+use App\Models\APP_KEEP_MONEY\User;
 use App\Traits\ResponseAPI;
 use Illuminate\Support\Facades\DB;
 
@@ -20,7 +20,7 @@ class GroupChatRepository
             // Validate that group chat exists
             $groupChat = GroupChat::find($groupId);
             if (!$groupChat) {
-                return $this->error("Group chat with ID $groupId not found", 404);
+                return $this->error("Không tìm thấy nhóm chat", 404);
             }
 
             // Generate a unique code
@@ -36,7 +36,7 @@ class GroupChatRepository
             // Generate the join link
             $joinLink = "/api/group-chat/join-group/{$groupId}/{$code}";
 
-            return $this->success("Create link join group successfully!", $joinLink, 201);
+            return $this->success("Tạo link nhóm thành công!", $joinLink, 201);
         } catch(\Exception $e) {
             $errorCode = $e->getCode();
             // Ensure error code is a valid HTTP status code
@@ -72,7 +72,7 @@ class GroupChatRepository
                 ->first();
 
             if (!$linkShare) {
-                return $this->error("Invalid group ID or code", 404);
+                return $this->error("Link nhóm không tồn tại!", 404);
             }
 
             // Check if the link has expired (1 day = 24 hours from created_at)
@@ -81,11 +81,11 @@ class GroupChatRepository
             $now = \Carbon\Carbon::now();
 
             if ($now->isAfter($expiresAt)) {
-                return $this->error("Share link has expired", 410); // 410 Gone
+                return $this->error("Link nhóm không đã hết hạn!", 410); // 410 Gone
             }
 
             // Link is valid and not expired
-            return $this->success("Join group link is valid", null);
+            return $this->success("Lấy link nhóm thành công!", null);
         } catch(\Exception $e) {
             $errorCode = $e->getCode();
             // Ensure error code is a valid HTTP status code
@@ -105,7 +105,7 @@ class GroupChatRepository
             // Find the group chat
             $groupChat = GroupChat::find($conversationId);
             if (!$groupChat) {
-                return $this->error("Group chat with ID $conversationId not found", 404);
+                return $this->error("Không tìm thấy nhóm chat", 404);
             }
 
             // Update the is_seen field
@@ -113,7 +113,7 @@ class GroupChatRepository
                 'is_seen' => $isSeen
             ]);
 
-            return $this->success("Seen status updated successfully", [
+            return $this->success("Cập nhật trạng thái thành công", [
                 'conversationId' => $conversationId,
                 'isSeen' => $isSeen,
                 'groupChatName' => $groupChat->name ?? null,
@@ -141,7 +141,7 @@ class GroupChatRepository
                 ->first();
 
             if (!$groupChat) {
-                return $this->error("Chat with type '$type' and ID $id not found", 404);
+                return $this->error("Không tìm thấy nhóm chat", 404);
             }
 
             // Get messages for this group chat
@@ -159,7 +159,7 @@ class GroupChatRepository
                     'email' => $member->email,
                     'phone' => $member->phone,
                     'createdAt' => $member->created_at ? $member->created_at->format('Y-m-d\TH:i:s') : null,
-                    'avatar' => $member->avatar,
+                    'avatar' => $member->avatar ? url('storage/' . $member->avatar) : null,
                     'tokenFcm' => $member->token_fcm,
                     'isOnline' => (bool) $member->is_online,
                     'lastOnlineAt' => $member->last_online_at ? $member->last_online_at->format('Y-m-d\TH:i:s.u') : null,
@@ -186,7 +186,7 @@ class GroupChatRepository
                 'name' => $groupChat->name,
                 'type' => $groupChat->type,
                 'isPrivate' => (bool) $groupChat->is_private,
-                'avatarGroupChat' => $groupChat->avatar,
+                'avatarGroupChat' => $groupChat->avatar ? url('storage/' . $groupChat->avatar) : null,
                 'isSeen' => (bool) $groupChat->is_seen,
                 'createdBy' => $groupChat->created_by,
                 'createdAt' => $groupChat->created_at ? $groupChat->created_at->format('Y-m-d\TH:i:s') : null,
@@ -197,7 +197,7 @@ class GroupChatRepository
                 'messages' => $formattedMessages,
             ];
 
-            return $this->success("Get detail chat successfully", $responseData);
+            return $this->success("Lấy thông tin nhóm chat thành công", $responseData);
         } catch(\Exception $e) {
             $errorCode = $e->getCode();
             // Ensure error code is a valid HTTP status code
@@ -230,7 +230,7 @@ class GroupChatRepository
                 ];
             }
 
-            return $this->success("Get list group chat successfully", $formattedData);
+            return $this->success("Lấy danh sách nhóm chat thành công!", $formattedData);
         } catch(\Exception $e) {
             $errorCode = $e->getCode();
             // Ensure error code is a valid HTTP status code
@@ -268,10 +268,11 @@ class GroupChatRepository
                 foreach ($groupChat->members as $member) {
                     $members[] = [
                         'id' => $member->id,
+                        'userId' => $member->id,
                         'fullName' => $member->full_name,
                         'email' => $member->email,
                         'phone' => $member->phone,
-                        'avatar' => $member->avatar,
+                        'avatar' => $member->avatar ? url('storage/' . $member->avatar) : null,
                         'isOnline' => (bool) $member->is_online,
                     ];
                 }
@@ -281,7 +282,7 @@ class GroupChatRepository
                     'name' => $groupChat->name,
                     'type' => $groupChat->type,
                     'isPrivate' => (bool) $groupChat->is_private,
-                    'avatar' => $groupChat->avatar,
+                    'avatar' => $groupChat->avatar ? url('storage/' . $groupChat->avatar) : null,
                     'isSeen' => (bool) $groupChat->is_seen,
                     'createdBy' => $groupChat->creator->id,
                     'members' => $members,
@@ -290,7 +291,7 @@ class GroupChatRepository
                 ];
             }
 
-            return $this->success("Get list group chat successfully", [
+            return $this->success("Lấy danh sách nhóm chat thành công!", [
                 'data' => $formattedData,
                 'pagination' => [
                     'currentPage' => (int) $pageNumber,
@@ -319,7 +320,7 @@ class GroupChatRepository
             // Validate that groupChatId exists
             $groupChat = GroupChat::find($groupChatId);
             if (!$groupChat) {
-                return $this->error("Group chat with ID $groupChatId not found", 404);
+                return $this->error("Nhóm chat không tồn tại!", 404);
             }
 
             // Verify all users exist
@@ -328,7 +329,7 @@ class GroupChatRepository
             if ($existingUsers->count() !== count($userIds)) {
                 $foundIds = $existingUsers->pluck('id')->toArray();
                 $missingIds = array_diff($userIds, $foundIds);
-                return $this->error("Users with IDs " . implode(', ', $missingIds) . " not found", 404);
+                return $this->error("Không tìm thấy User với IDs " . implode(', ', $missingIds), 404);
             }
 
             // Update group chat
@@ -358,13 +359,13 @@ class GroupChatRepository
 
             DB::commit();
 
-            return $this->success("Group chat updated successfully", [
+            return $this->success("Cập nhật nhóm chat thành công!", [
                 'id' => $groupChat->id,
                 'name' => $groupChat->name,
                 'type' => $groupChat->type,
                 'createdBy' => $groupChat->created_by,
                 'isPrivate' => $groupChat->is_private,
-                'avatar' => $groupChat->avatar,
+                'avatar' => $groupChat->avatar ? url('storage/' . $groupChat->avatar) : null,
                 'isSeen' => $groupChat->is_seen,
                 'members' => $members,
                 'createdAt' => $groupChat->created_at->format('Y-m-d\TH:i:s'),
@@ -390,13 +391,13 @@ class GroupChatRepository
             // Validate that group chat exists
             $groupChat = GroupChat::find($groupChatId);
             if (!$groupChat) {
-                return $this->error("Group chat with ID $groupChatId not found", 404);
+                return $this->error("Không tìm thấy nhóm chat!", 404);
             }
 
             // Validate that user exists
             $user = User::find($userId);
             if (!$user) {
-                return $this->error("User with ID $userId not found", 404);
+                return $this->error("Không tìm thấy người dùng", 404);
             }
 
             // Check if user is already a member
@@ -406,7 +407,7 @@ class GroupChatRepository
                 ->first();
 
             if ($existingMember) {
-                return $this->error("User is already a member of this group chat", 409);
+                return $this->error("Người dùng đang tồn tại trong nhóm chat khác", 409);
             }
 
             // Add user to group chat
@@ -417,7 +418,7 @@ class GroupChatRepository
 
             DB::commit();
 
-            return $this->success("Member invited successfully", [
+            return $this->success("Thêm người dùng thành công!", [
                 'groupId' => $groupChatId,
                 'userId' => $userId,
                 'userName' => $user->full_name ?? null,
@@ -443,13 +444,13 @@ class GroupChatRepository
             // Validate that group chat exists
             $groupChat = GroupChat::find($groupChatId);
             if (!$groupChat) {
-                return $this->error("Group chat with ID $groupChatId not found", 404);
+                return $this->error("Không tìm thấy nhóm chat!", 404);
             }
 
             // Validate that user exists
             $user = User::find($userId);
             if (!$user) {
-                return $this->error("User with ID $userId not found", 404);
+                return $this->error("Không tìm thấy người dùng", 404);
             }
 
             // Check if user is a member
@@ -459,7 +460,7 @@ class GroupChatRepository
                 ->first();
 
             if (!$existingMember) {
-                return $this->error("User is not a member of this group chat", 404);
+                return $this->error("Người dùng không tồn tại trong nhóm chat", 404);
             }
 
             // Remove user from group chat
@@ -470,7 +471,7 @@ class GroupChatRepository
 
             DB::commit();
 
-            return $this->success("Member removed successfully", [
+            return $this->success("Xoá người dùng thành công!", [
                 'groupId' => $groupChatId,
                 'userId' => $userId,
                 'userName' => $user->full_name ?? null,
@@ -496,11 +497,11 @@ class GroupChatRepository
             // Verify all users exist
             $userIds = $data['userIds'];
             $existingUsers = User::whereIn('id', $userIds)->get();
-            
+
             if ($existingUsers->count() !== count($userIds)) {
                 $foundIds = $existingUsers->pluck('id')->toArray();
                 $missingIds = array_diff($userIds, $foundIds);
-                return $this->error("Users with IDs " . implode(', ', $missingIds) . " not found", 404);
+                return $this->error("Không tìm thấy người dùng", 404);
             }
 
             // Create the group chat
@@ -532,12 +533,12 @@ class GroupChatRepository
 
             DB::commit();
 
-            return $this->success("Group chat created successfully", [
+            return $this->success("Tạo nhóm chat thành công", [
                 'id' => $groupChat->id,
                 'name' => $groupChat->name,
                 'type' => $groupChat->type,
                 'isPrivate' => $groupChat->is_private,
-                'avatar' => $groupChat->avatar,
+                'avatar' => $groupChat->avatar ? url('storage/' . $groupChat->avatar) : null,
                 'createdBy' => $groupChat->created_by,
                 'members' => $members,
                 'createdAt' => $groupChat->created_at->format('Y-m-d\TH:i:s'),

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\APP_KEEP_MONEY;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -30,7 +30,7 @@ class UserRequest extends FormRequest
             // I want to check the user if exists first
             // If exists, will pass the email for unique validation
             // This is efficient, rather than we creating another validation for create or update
-            'email' => request()->route('user') 
+            'email' => request()->route('user')
                 ? 'required|email|max:255|unique:users,email,' . request()->route('user')
                 : 'required|email|max:255|unique:users,email',
             'password' => request()->route('user') ? 'nullable' : 'required|max:50'

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\APP_KEEP_MONEY;
 
 use App\Http\Controllers\Controller;
-use App\Interfaces\GroupInterface;
+use App\Interfaces\APP_KEEP_MONEY\GroupInterface;
 use App\Traits\ResponseAPI;
 use Illuminate\Http\Request;
 
@@ -62,7 +62,7 @@ class GroupController extends Controller
             if (!is_numeric($id)) {
                 return $this->error('Invalid ID format. ID must be numeric.', 400);
             }
-            
+
             $id = (int) $id;
             return $this->groupRepository->getById($id);
         } catch (\Exception $e) {
@@ -84,7 +84,7 @@ class GroupController extends Controller
             if (!is_numeric($id)) {
                 return $this->error('Invalid ID format. ID must be numeric.', 400);
             }
-            
+
             $id = (int) $id;
             return $this->groupRepository->getDetail($id);
         } catch (\Exception $e) {
@@ -104,21 +104,21 @@ class GroupController extends Controller
             // Validate request data
             $data = $request->validate([
                 'name' => 'required|string|max:255|min:1',
-                'userIds' => 'required|array|min:1',
-                'userIds.*' => 'integer|min:1',
-                'userNames' => 'required|array|min:1',
-                'userNames.*' => 'string|max:255',
+                'userIds' => 'array',
+                'userIds.*' => 'integer',
+                'userNames' => 'array',
+                'userNames.*' => 'string',
                 'groupChatId' => 'nullable|integer|min:1',
             ]);
 
             // Validate that userIds and userNames arrays have the same length
-            if (count($data['userIds']) !== count($data['userNames'])) {
-                return $this->error('userIds and userNames arrays must have the same length', 422);
-            }
+            // if (count($data['userIds']) !== count($data['userNames'])) {
+            //     return $this->error('userIds and userNames arrays must have the same length', 422);
+            // }
 
             return $this->groupRepository->createGroup($data);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error('Validation failed: ' . implode(', ', $e->validator->errors()->all()), 422);
+            return $this->error('Không thể xác thực:: ' . implode(', ', $e->validator->errors()->all()), 422);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -138,9 +138,9 @@ class GroupController extends Controller
             if (!is_numeric($id)) {
                 return $this->error('Invalid ID format. ID must be numeric.', 400);
             }
-            
+
             $id = (int) $id;
-            
+
             $data = $request->validate([
                 'name' => 'sometimes|string|max:255',
                 'type' => 'sometimes|string|max:255',
@@ -150,7 +150,7 @@ class GroupController extends Controller
 
             return $this->groupRepository->update($id, $data);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error('Validation failed: ' . implode(', ', $e->validator->errors()->all()), 422);
+            return $this->error('Không thể xác thực:: ' . implode(', ', $e->validator->errors()->all()), 422);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -168,11 +168,11 @@ class GroupController extends Controller
         try {
             // Validate that $groupId is numeric
             if (!is_numeric($groupId)) {
-                return $this->error('Invalid group ID format. ID must be numeric.', 400);
+                return $this->error('ID nhóm phải là số.', 400);
             }
-            
+
             $groupId = (int) $groupId;
-            
+
             // Validate request data
             $data = $request->validate([
                 'name' => 'required|string|max:255|min:1',
@@ -180,7 +180,7 @@ class GroupController extends Controller
 
             return $this->groupRepository->updateGroupName($groupId, $data['name']);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error('Validation failed: ' . implode(', ', $e->validator->errors()->all()), 422);
+            return $this->error('Không thể xác thực:: ' . implode(', ', $e->validator->errors()->all()), 422);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -198,9 +198,9 @@ class GroupController extends Controller
         try {
             // Validate that $activityId is numeric
             if (!is_numeric($activityId)) {
-                return $this->error('Invalid activity ID format. ID must be numeric.', 400);
+                return $this->error('Id hoạt động phải là số.', 400);
             }
-            
+
             $activityId = (int) $activityId;
             return $this->groupRepository->getActivityDetail($activityId);
         } catch (\Exception $e) {
@@ -223,9 +223,9 @@ class GroupController extends Controller
                 'name' => 'required|string|max:255|min:1',
                 'isBalance' => 'required|boolean',
                 'note' => 'nullable|string|max:1000',
-                'payers' => 'required|array|min:1',
-                'payers.*.userId' => 'required|integer|min:1',
-                'payers.*.paymentAmount' => 'required|numeric|min:0',
+                'payers' => 'array',
+                'payers.*.userId' => 'integer',
+                'payers.*.paymentAmount' => 'numeric',
                 'senders' => 'required|array|min:1',
                 'senders.*.userId' => 'required|integer|min:1',
                 'senders.*.amount' => 'required|numeric|min:0',
@@ -238,7 +238,7 @@ class GroupController extends Controller
 
             return $this->groupRepository->createActivity($data);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error('Validation failed: ' . implode(', ', $e->validator->errors()->all()), 422);
+            return $this->error('Không thể xác thực:: ' . implode(', ', $e->validator->errors()->all()), 422);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -256,20 +256,20 @@ class GroupController extends Controller
         try {
             // Validate that $activityId is numeric
             if (!is_numeric($activityId)) {
-                return $this->error('Invalid activity ID format. ID must be numeric.', 400);
+                return $this->error('Id hoạt động phải là số.', 400);
             }
-            
+
             $activityId = (int) $activityId;
-            
+
             // Validate request data
             $data = $request->validate([
                 'tripId' => 'required|integer|min:1',
                 'name' => 'required|string|max:255|min:1',
                 'isBalance' => 'required|boolean',
                 'note' => 'nullable|string|max:1000',
-                'payers' => 'required|array|min:1',
-                'payers.*.userId' => 'required|integer|min:1',
-                'payers.*.paymentAmount' => 'required|numeric|min:0',
+                'payers' => 'nullable|array',
+                'payers.*.userId' => 'required_with:payers|integer|min:1',
+                'payers.*.paymentAmount' => 'required_with:payers|numeric|min:0',
                 'senders' => 'required|array|min:1',
                 'senders.*.userId' => 'required|integer|min:1',
                 'senders.*.amount' => 'required|numeric|min:0',
@@ -280,7 +280,7 @@ class GroupController extends Controller
 
             return $this->groupRepository->updateActivity($activityId, $data);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error('Validation failed: ' . implode(', ', $e->validator->errors()->all()), 422);
+            return $this->error('Không thể xác thực:: ' . implode(', ', $e->validator->errors()->all()), 422);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -298,11 +298,11 @@ class GroupController extends Controller
         try {
             // Validate that $groupId is numeric
             if (!is_numeric($groupId)) {
-                return $this->error('Invalid group ID format. ID must be numeric.', 400);
+                return $this->error('ID nhóm phải là số.', 400);
             }
-            
+
             $groupId = (int) $groupId;
-            
+
             // Validate request data
             $data = $request->validate([
                 'userName' => 'nullable|string|max:255',
@@ -316,7 +316,7 @@ class GroupController extends Controller
 
             return $this->groupRepository->addMember($groupId, $data);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error('Validation failed: ' . implode(', ', $e->validator->errors()->all()), 422);
+            return $this->error('Không thể xác thực:: ' . implode(', ', $e->validator->errors()->all()), 422);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -335,12 +335,16 @@ class GroupController extends Controller
         try {
             // Validate that $groupId is numeric
             if (!is_numeric($groupId)) {
-                return $this->error('Invalid group ID format. ID must be numeric.', 400);
+                return $this->error('ID nhóm phải là số.', 400);
             }
-            
+
             $groupId = (int) $groupId;
-            
-            return $this->groupRepository->getGroupReport($groupId);
+
+            // Get date filters from request
+            $startDate = $request->query('startDate');
+            $endDate = $request->query('endDate');
+
+            return $this->groupRepository->getGroupReport($groupId, $startDate, $endDate);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -358,11 +362,11 @@ class GroupController extends Controller
         try {
             // Validate that $groupId is numeric
             if (!is_numeric($groupId)) {
-                return $this->error('Invalid group ID format. ID must be numeric.', 400);
+                return $this->error('ID nhóm phải là số.', 400);
             }
-            
+
             $groupId = (int) $groupId;
-            
+
             return $this->groupRepository->finishGroup($groupId);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
@@ -381,9 +385,9 @@ class GroupController extends Controller
         try {
             // Validate that $id is numeric
             if (!is_numeric($id)) {
-                return $this->error('Invalid ID format. ID must be numeric.', 400);
+                return $this->error('ID phải là số', 400);
             }
-            
+
             $id = (int) $id;
             return $this->groupRepository->delete($id);
         } catch (\Exception $e) {

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Repositories\APP_KEEP_MONEY;
 
-use App\Http\Requests\UserRequest;
-use App\Interfaces\UserInterface;
+use App\Http\Requests\APP_KEEP_MONEY\UserRequest;
+use App\Interfaces\APP_KEEP_MONEY\UserInterface;
+use App\Models\APP_KEEP_MONEY\User;
 use App\Traits\ResponseAPI;
-use App\Models\User;
 use DB;
 
 class UserRepository implements UserInterface
@@ -17,7 +17,7 @@ class UserRepository implements UserInterface
     {
         try {
             $users = User::all();
-            return $this->success("All Users", $users);
+            return $this->success("Tất cả người dùng", $users);
         } catch(\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode());
         }
@@ -27,11 +27,11 @@ class UserRepository implements UserInterface
     {
         try {
             $user = User::find($id);
-            
-            // Check the user
-            if(!$user) return $this->error("No user with ID $id", 404);
 
-            return $this->success("User Detail", $user);
+            // Check the user
+            if(!$user) return $this->error("Không tìm thấy người dùng", 404);
+
+            return $this->success("Lấy thông tin thành công", $user);
         } catch(\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode());
         }
@@ -46,14 +46,14 @@ class UserRepository implements UserInterface
             // Else create the new one.
             $user = $id ? User::find($id) : new User;
 
-            // Check the user 
-            if($id && !$user) return $this->error("No user with ID $id", 404);
+            // Check the user
+            if($id && !$user) return $this->error("Không tìm thấy người dùng", 404);
 
             $user->name = $request->name;
             // Remove a whitespace and make to lowercase
             $user->email = preg_replace('/\s+/', '', strtolower($request->email));
-            
-            // I dont wanna to update the password, 
+
+            // I dont wanna to update the password,
             // Password must be fill only when creating a new user.
             if(!$id) $user->password = \Hash::make($request->password);
 
@@ -78,13 +78,13 @@ class UserRepository implements UserInterface
             $user = User::find($id);
 
             // Check the user
-            if(!$user) return $this->error("No user with ID $id", 404);
+            if(!$user) return $this->error("Không tìm thấy người dùng", 404);
 
             // Delete the user
             $user->delete();
 
             DB::commit();
-            return $this->success("User deleted", $user);
+            return $this->success("Xoá thành công", $user);
         } catch(\Exception $e) {
             DB::rollBack();
             return $this->error($e->getMessage(), $e->getCode());
@@ -95,9 +95,9 @@ class UserRepository implements UserInterface
     {
         try {
             $user = User::find($id);
-            
+
             // Check the user
-            if(!$user) return $this->error("No user with ID $id", 404);
+            if(!$user) return $this->error("Không tìm thấy người dùng", 404);
 
             // Format response theo yêu cầu
             $userData = [
@@ -112,7 +112,7 @@ class UserRepository implements UserInterface
                 'lastOnlineAt' => $user->last_online_at ? $user->last_online_at->toISOString() : null,
             ];
 
-            return $this->success("User info retrieved successfully", $userData);
+            return $this->success("Lấy thông tin thành công", $userData);
         } catch(\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode());
         }

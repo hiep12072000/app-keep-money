@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\APP_KEEP_MONEY;
 
-use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 
 class PasswordResetOtp extends Model
 {

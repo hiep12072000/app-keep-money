@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\APP_KEEP_MONEY;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Contracts\Validation\Validator;
 
 class ChangePasswordRequest extends FormRequest
 {
@@ -43,12 +43,12 @@ class ChangePasswordRequest extends FormRequest
             'oldPassword.required' => 'Mật khẩu cũ là bắt buộc',
             'oldPassword.string' => 'Mật khẩu cũ phải là chuỗi',
             'oldPassword.min' => 'Mật khẩu cũ phải có ít nhất 6 ký tự',
-            
+
             'newPassword.required' => 'Mật khẩu mới là bắt buộc',
             'newPassword.string' => 'Mật khẩu mới phải là chuỗi',
             'newPassword.min' => 'Mật khẩu mới phải có ít nhất 6 ký tự',
             'newPassword.different' => 'Mật khẩu mới phải khác mật khẩu cũ',
-            
+
             'confirmPassword.required' => 'Xác nhận mật khẩu là bắt buộc',
             'confirmPassword.string' => 'Xác nhận mật khẩu phải là chuỗi',
             'confirmPassword.same' => 'Xác nhận mật khẩu không khớp với mật khẩu mới',

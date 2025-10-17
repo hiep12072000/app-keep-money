@@ -1,27 +1,29 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\APP_KEEP_MONEY;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TripPayer extends Model
+class TripSpendingHistoryUser extends Model
 {
-    protected $table = 'trip_payer';
-    
+    protected $table = 'akm_trip_spending_history_users';
+
     public $timestamps = false;
 
     protected $fillable = [
         'trip_spending_history_id',
         'user_id',
-        'payment_amount',
+        'amount',
+        'is_balance',
     ];
 
     protected $casts = [
-        'payment_amount' => 'decimal:2',
+        'amount' => 'decimal:2',
+        'is_balance' => 'boolean',
     ];
 
     /**
-     * Get the spending history that owns this payer
+     * Get the spending history that owns this user
      */
     public function spendingHistory()
     {
@@ -29,7 +31,7 @@ class TripPayer extends Model
     }
 
     /**
-     * Get the user who paid
+     * Get the user
      */
     public function user()
     {

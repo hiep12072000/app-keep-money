@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\APP_KEEP_MONEY;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,7 +9,7 @@ class GroupChat extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'group_chat';
+    protected $table = 'akm_group_chat';
 
     protected $fillable = [
         'name',

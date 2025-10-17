@@ -3,23 +3,22 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\APP_KEEP_MONEY\ChangePasswordRequest;
+use App\Http\Requests\APP_KEEP_MONEY\RegisterRequest;
+use App\Http\Requests\APP_KEEP_MONEY\ResetPasswordRequest;
+use App\Http\Requests\APP_KEEP_MONEY\SendEmailRequest;
+use App\Http\Requests\APP_KEEP_MONEY\VerifyOtpRequest;
 use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterRequest;
-use App\Http\Requests\SendEmailRequest;
-use App\Http\Requests\VerifyOtpRequest;
-use App\Http\Requests\ResetPasswordRequest;
-use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\UpdateProfileRequest;
-use App\Models\User;
-use App\Models\PasswordResetOtp;
+use App\Interfaces\APP_KEEP_MONEY\UserInterface;
 use App\Mail\OtpMail;
+use App\Models\APP_KEEP_MONEY\PasswordResetOtp;
+use App\Models\APP_KEEP_MONEY\User;
 use App\Traits\ResponseAPI;
-use App\Interfaces\UserInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -350,19 +349,19 @@ class AuthController extends Controller
 
             // Chuẩn bị dữ liệu cập nhật
             $updateData = [];
-            
+
             if ($request->has('fullName')) {
                 $updateData['full_name'] = $request->fullName;
             }
-            
+
             if ($request->has('email')) {
                 $updateData['email'] = $request->email;
             }
-            
+
             if ($request->has('phone')) {
                 $updateData['phone'] = $request->phone;
             }
-            
+
             if ($request->has('avatar')) {
                 $updateData['avatar'] = $request->avatar;
             }
@@ -400,7 +399,7 @@ class AuthController extends Controller
         try {
             // Lấy user hiện tại từ JWT token
             $user = Auth::guard('api')->user();
-            
+
             // Sử dụng repository để lấy thông tin user
             return $this->userRepository->findMyself($user->id);
 
@@ -420,12 +419,12 @@ class AuthController extends Controller
         try {
             // Lấy user hiện tại từ JWT token
             $user = Auth::guard('api')->user();
-            
+
             // Lấy parameters từ request
             $keyword = $request->get('keyword');
             $page = (int) $request->get('page', 1);
             $perPage = (int) $request->get('per_page', 10);
-            
+
             // Sử dụng repository để lấy danh sách users
             return $this->userRepository->findExceptMe($user->id, $keyword, $page, $perPage);
 

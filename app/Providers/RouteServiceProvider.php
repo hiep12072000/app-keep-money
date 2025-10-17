@@ -46,6 +46,11 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->mapWebRoutes();
 
+        // ✅ Route riêng cho app-keep-money
+        $this->mapAppKeepMoneyRoutes();
+
+        // ✅ Route riêng cho app-sport-partner
+        $this->mapAppSportPartnerRoutes();
         //
     }
 
@@ -76,5 +81,21 @@ class RouteServiceProvider extends ServiceProvider
             ->middleware('api')
             ->namespace($this->namespace)
             ->group(base_path('routes/api.php'));
+    }
+
+    protected function mapAppKeepMoneyRoutes()
+    {
+        Route::prefix('app-keep-money')
+            ->middleware('api')
+            ->namespace($this->namespace)
+            ->group(base_path('routes/app-keep-money/api.php'));
+    }
+
+    protected function mapAppSportPartnerRoutes()
+    {
+        Route::prefix('app-sport-partner')
+            ->middleware('api')
+            ->namespace($this->namespace)
+            ->group(base_path('routes/app-sport-partner/api.php'));
     }
 }

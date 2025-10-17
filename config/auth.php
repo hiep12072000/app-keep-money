@@ -68,7 +68,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            'model' => \App\Models\APP_KEEP_MONEY\User::class,
         ],
 
         // 'users' => [

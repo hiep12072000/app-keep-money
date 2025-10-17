@@ -1,16 +1,22 @@
 <?php
 
-namespace App\Interfaces;
+namespace App\Interfaces\APP_KEEP_MONEY;
+
+use App\Interfaces\DELETE;
+use App\Interfaces\GET;
+use App\Interfaces\PATCH;
+use App\Interfaces\POST;
+use App\Interfaces\PUT;
 
 interface GroupInterface
 {
     /**
      * Get all groups with pagination and search
-     * 
+     *
      * @param   string      $keyword
      * @param   integer     $page
      * @param   integer     $perPage
-     * 
+     *
      * @method  GET api/group?keyword=$keyword
      * @access  public
      */
@@ -18,9 +24,9 @@ interface GroupInterface
 
     /**
      * Get group by ID
-     * 
+     *
      * @param   integer     $id
-     * 
+     *
      * @method  GET api/group/{id}
      * @access  public
      */
@@ -28,9 +34,9 @@ interface GroupInterface
 
     /**
      * Get group detail with members and activities
-     * 
+     *
      * @param   integer     $id
-     * 
+     *
      * @method  GET api/group/detail/{id}
      * @access  public
      */
@@ -38,9 +44,9 @@ interface GroupInterface
 
     /**
      * Create new group
-     * 
+     *
      * @param   array       $data
-     * 
+     *
      * @method  POST api/group
      * @access  public
      */
@@ -48,10 +54,10 @@ interface GroupInterface
 
     /**
      * Update group
-     * 
+     *
      * @param   integer     $id
      * @param   array       $data
-     * 
+     *
      * @method  PUT api/group/{id}
      * @access  public
      */
@@ -59,9 +65,9 @@ interface GroupInterface
 
     /**
      * Delete group
-     * 
+     *
      * @param   integer     $id
-     * 
+     *
      * @method  DELETE api/group/{id}
      * @access  public
      */
@@ -69,10 +75,10 @@ interface GroupInterface
 
     /**
      * Update group name only
-     * 
+     *
      * @param   integer     $groupId
      * @param   string      $name
-     * 
+     *
      * @method  PATCH api/group/update-group/{groupId}
      * @access  public
      */
@@ -80,9 +86,9 @@ interface GroupInterface
 
     /**
      * Get group activity detail
-     * 
+     *
      * @param   integer     $activityId
-     * 
+     *
      * @method  GET api/group/activity/detail/{activityId}
      * @access  public
      */
@@ -90,9 +96,9 @@ interface GroupInterface
 
     /**
      * Create group activity
-     * 
+     *
      * @param   array       $data
-     * 
+     *
      * @method  POST api/group/activity
      * @access  public
      */
@@ -100,10 +106,10 @@ interface GroupInterface
 
     /**
      * Update group activity
-     * 
+     *
      * @param   integer     $activityId
      * @param   array       $data
-     * 
+     *
      * @method  PATCH api/group/update-activity/{activityId}
      * @access  public
      */
@@ -111,10 +117,10 @@ interface GroupInterface
 
     /**
      * Add member to group
-     * 
+     *
      * @param   integer     $groupId
      * @param   array       $data
-     * 
+     *
      * @method  POST api/group/add-member/{groupId}
      * @access  public
      */
@@ -122,9 +128,9 @@ interface GroupInterface
 
     /**
      * Finish group (update status to done)
-     * 
+     *
      * @param   integer     $groupId
-     * 
+     *
      * @method  PATCH api/group/finish-group/{groupId}
      * @access  public
      */
@@ -132,9 +138,9 @@ interface GroupInterface
 
     /**
      * Create group
-     * 
+     *
      * @param   array       $data
-     * 
+     *
      * @method  POST api/group
      * @access  public
      */
@@ -142,9 +148,9 @@ interface GroupInterface
 
     /**
      * Get group report
-     * 
+     *
      * @param   integer     $groupId
-     * 
+     *
      * @method  GET api/group/get-group-report/{groupId}
      * @access  public
      */

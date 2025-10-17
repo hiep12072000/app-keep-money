@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\APP_KEEP_MONEY;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Http\Requests\UserRequest;
-use App\Interfaces\UserInterface;
+use App\Http\Requests\APP_KEEP_MONEY\UserRequest;
+use App\Interfaces\APP_KEEP_MONEY\UserInterface;
 
 class UserController extends Controller
 {
@@ -32,7 +31,7 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\UserRequest  $request
+     * @param  \App\Http\Requests\APP_KEEP_MONEY\UserRequest  $request
      * @return \Illuminate\Http\Response
      */
     public function store(UserRequest $request)
@@ -54,7 +53,7 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UserRequest  $request
+     * @param  \App\Http\Requests\APP_KEEP_MONEY\UserRequest  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */

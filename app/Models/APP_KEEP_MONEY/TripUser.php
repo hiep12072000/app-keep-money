@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\APP_KEEP_MONEY;
 
 use Illuminate\Database\Eloquent\Model;
 
 class TripUser extends Model
 {
 
-    protected $table = 'trip_users';
+    protected $table = 'akm_trip_users';
 
     protected $fillable = [
         'user_id',
@@ -18,7 +18,7 @@ class TripUser extends Model
     protected $casts = [
         'advance' => 'decimal:0', // Phù hợp với DECIMAL(10, 0) trong database
     ];
-    
+
     /**
      * Get the advance attribute with proper null handling
      */

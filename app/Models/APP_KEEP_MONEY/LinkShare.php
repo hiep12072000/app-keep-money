@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\APP_KEEP_MONEY;
 
 use Illuminate\Database\Eloquent\Model;
 
 class LinkShare extends Model
 {
-    protected $table = 'link_shares';
+    protected $table = 'akm_link_shares';
 
     protected $fillable = [
         'group_id',

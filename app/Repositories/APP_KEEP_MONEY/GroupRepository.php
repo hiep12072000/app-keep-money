@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Repositories\APP_KEEP_MONEY;
 
-use App\Interfaces\GroupInterface;
-use App\Models\Trip;
-use App\Models\TripSpendingHistory;
-use App\Models\TripPayer;
-use App\Models\TripSpendingHistoryUser;
-use App\Models\User;
+use App\Interfaces\APP_KEEP_MONEY\GroupInterface;
+use App\Models\APP_KEEP_MONEY\Trip;
+use App\Models\APP_KEEP_MONEY\TripPayer;
+use App\Models\APP_KEEP_MONEY\TripSpendingHistory;
+use App\Models\APP_KEEP_MONEY\TripSpendingHistoryUser;
+use App\Models\APP_KEEP_MONEY\User;
 use App\Traits\ResponseAPI;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class GroupRepository implements GroupInterface
@@ -76,7 +77,7 @@ class GroupRepository implements GroupInterface
                 ];
             }
 
-            return $this->success("Get list successfully", $groupedData);
+            return $this->success("Lấy danh sách nhóm thành công", $groupedData);
         } catch(\Exception $e) {
             $errorCode = $e->getCode();
             // Ensure error code is a valid HTTP status code
@@ -92,14 +93,14 @@ class GroupRepository implements GroupInterface
         try {
             // Validate that $id is numeric and positive
             if (!is_numeric($id) || $id <= 0) {
-                return $this->error("Invalid trip ID: $id. ID must be a positive number.", 400);
+                return $this->error("Id nhóm phải là số.", 400);
             }
 
             $trip = Trip::with(['creator'])->find($id);
 
-            if(!$trip) return $this->error("No trip with ID $id", 404);
+            if(!$trip) return $this->error("Không tồn tại ID nhóm: $id", 404);
 
-            return $this->success("Trip Detail", $trip);
+            return $this->success("Thông tin nhóm: ", $trip);
         } catch(\Exception $e) {
             $errorCode = $e->getCode();
             // Ensure error code is a valid HTTP status code
@@ -118,12 +119,12 @@ class GroupRepository implements GroupInterface
         try {
             // Validate that $id is numeric and positive
             if (!is_numeric($id) || $id <= 0) {
-                return $this->error("Invalid trip ID: $id. ID must be a positive number.", 400);
+                return $this->error("Id nhóm phải là số.", 400);
             }
 
             $trip = Trip::with(['creator', 'keyMember', 'spendingHistory', 'members'])->find($id);
 
-            if(!$trip) return $this->error("No trip with ID $id", 404);
+            if(!$trip) return $this->error("Không tồn tại ID nhóm: $id", 404);
 
             // Format keyMember
             $keyMember = null;
@@ -141,7 +142,7 @@ class GroupRepository implements GroupInterface
                         'lastOnlineAt' => $trip->keyMember->last_online_at ? $trip->keyMember->last_online_at->format('Y-m-d\TH:i:s.u') : null,
                     ];
                 } catch(\Exception $e) {
-                    return $this->error("Error formatting keyMember: " . $e->getMessage(), 500);
+                    return $this->error("Lỗi hệ thống, xin vui lòng thử lại", 500);
                 }
             }
 
@@ -158,12 +159,11 @@ class GroupRepository implements GroupInterface
                             'createdAt' => $member->created_at ? $member->created_at->format('Y-m-d\TH:i:s') : null,
                             'avatar' => $member->avatar ? url('storage/' . $member->avatar) : null,
                             'tokenFcm' => $member->token_fcm ?? null,
-                            'isOnline' => (bool) ($member->is_online ?? false),
-                            'lastOnlineAt' => $member->last_online_at ? $member->last_online_at->format('Y-m-d\TH:i:s.u') : null,
+                            'isOnline' => (bool) ($member->is_online ?? false),                            'lastOnlineAt' => $member->last_online_at ? $member->last_online_at->format('Y-m-d\TH:i:s.u') : null,
                         ];
                     }
                 } catch(\Exception $e) {
-                    return $this->error("Error formatting groupUsers: " . $e->getMessage(), 500);
+                    return $this->error("Lỗi hệ thống, xin vui lòng thử lại" , 500);
                 }
             }
 
@@ -185,7 +185,7 @@ class GroupRepository implements GroupInterface
                         ];
                     }
                 } catch(\Exception $e) {
-                    return $this->error("Error formatting groupActivities: " . $e->getMessage(), 500);
+                    return $this->error("Lỗi hệ thống, xin vui lòng thử lại" , 500);
                 }
             }
 
@@ -205,10 +205,10 @@ class GroupRepository implements GroupInterface
                     'groupActivities' => $groupActivities,
                 ];
             } catch(\Exception $e) {
-                return $this->error("Error formatting responseData: " . $e->getMessage(), 500);
+                return $this->error("Lỗi hệ thống, xin vui lòng thử lại" , 500);
             }
 
-            return $this->success("Get detail group successfully", $responseData);
+            return $this->success("Lấy thông tin thành công", $responseData);
         } catch(\Exception $e) {
             $errorCode = $e->getCode();
             // Ensure error code is a valid HTTP status code
@@ -244,12 +244,12 @@ class GroupRepository implements GroupInterface
         try {
             // Validate that $id is numeric and positive
             if (!is_numeric($id) || $id <= 0) {
-                return $this->error("Invalid trip ID: $id. ID must be a positive number.", 400);
+                return $this->error("Id nhóm phải là số.", 400);
             }
 
             $trip = Trip::find($id);
 
-            if(!$trip) return $this->error("No trip with ID $id", 404);
+            if(!$trip) return $this->error("Không tồn tại ID nhóm: $id", 404);
 
             $trip->update($data);
 
@@ -272,12 +272,12 @@ class GroupRepository implements GroupInterface
         try {
             // Validate that $id is numeric and positive
             if (!is_numeric($id) || $id <= 0) {
-                return $this->error("Invalid trip ID: $id. ID must be a positive number.", 400);
+                return $this->error("Id nhóm phải là số.", 400);
             }
 
             $trip = Trip::find($id);
 
-            if(!$trip) return $this->error("No trip with ID $id", 404);
+            if(!$trip) return $this->error("Không tồn tại ID nhóm: $id", 404);
 
             $trip->delete();
 
@@ -303,19 +303,19 @@ class GroupRepository implements GroupInterface
         try {
             // Validate that $groupId is numeric and positive
             if (!is_numeric($groupId) || $groupId <= 0) {
-                return $this->error("Invalid group ID: $groupId. ID must be a positive number.", 400);
+                return $this->error("ID nhóm phải là số.", 400);
             }
 
             $trip = Trip::find($groupId);
 
-            if(!$trip) return $this->error("No group with ID $groupId", 404);
+            if(!$trip) return $this->error("Không tìm thấy nhóm", 404);
 
             // Update only the name field
             $trip->name = $name;
             $trip->save();
 
             DB::commit();
-            return $this->success("Group name updated successfully", [
+            return $this->success("Cập nhật thành công", [
                 'id' => $trip->id,
                 'name' => $trip->name,
                 'updated_at' => $trip->updated_at->format('Y-m-d\TH:i:s')
@@ -339,7 +339,7 @@ class GroupRepository implements GroupInterface
         try {
             // Validate that $activityId is numeric and positive
             if (!is_numeric($activityId) || $activityId <= 0) {
-                return $this->error("Invalid activity ID: $activityId. ID must be a positive number.", 400);
+                return $this->error("ID hoạt động phải là số", 400);
             }
 
             $activity = TripSpendingHistory::with([
@@ -349,7 +349,7 @@ class GroupRepository implements GroupInterface
                 'spendingUsers.user'
             ])->find($activityId);
 
-            if(!$activity) return $this->error("No activity with ID $activityId", 404);
+            if(!$activity) return $this->error("Không tìm thấy ID hoạt động", 404);
 
             // Format userCreated
             $userCreated = null;
@@ -411,7 +411,7 @@ class GroupRepository implements GroupInterface
                 'senders' => $senders,
             ];
 
-            return $this->success("Get activity detail successfully", $responseData);
+            return $this->success("Lấy thành công thông tin", $responseData);
         } catch(\Exception $e) {
             $errorCode = $e->getCode();
             // Ensure error code is a valid HTTP status code
@@ -432,13 +432,13 @@ class GroupRepository implements GroupInterface
             // Validate that groupId exists
             $trip = Trip::find($data['groupId']);
             if (!$trip) {
-                return $this->error("Group with ID {$data['groupId']} not found", 404);
+                return $this->error("Không tìm thấy nhóm", 404);
             }
 
             // Calculate total amount from payers (array)
             $totalAmount = 0;
-            foreach ($data['payers'] as $payer) {
-                $totalAmount += $payer['paymentAmount'];
+            foreach ($data['senders'] as $payer) {
+                $totalAmount += $payer['amount'];
             }
 
             // Create the spending history record
@@ -473,7 +473,7 @@ class GroupRepository implements GroupInterface
             DB::commit();
 
             // Return the created activity with basic details
-            return $this->success("Activity created successfully", [
+            return $this->success("Tạo thành công", [
                 'id' => is_numeric($spendingHistory->id) ? (int) $spendingHistory->id : null,
                 'groupId' => is_numeric($spendingHistory->trip_id) ? (int) $spendingHistory->trip_id : null,
                 'name' => $spendingHistory->name ?? null,
@@ -504,25 +504,27 @@ class GroupRepository implements GroupInterface
         try {
             // Validate that $activityId is numeric and positive
             if (!is_numeric($activityId) || $activityId <= 0) {
-                return $this->error("Invalid activity ID: $activityId. ID must be a positive number.", 400);
+                return $this->error("Id hoạt động phải là số", 400);
             }
 
             // Find the activity
             $spendingHistory = TripSpendingHistory::find($activityId);
             if (!$spendingHistory) {
-                return $this->error("Activity with ID $activityId not found", 404);
+                return $this->error("Không tìm thấy ID hoạt động", 404);
             }
 
             // Validate that groupId exists
             $trip = Trip::find($data['groupId']);
             if (!$trip) {
-                return $this->error("Group with ID {$data['groupId']} not found", 404);
+                return $this->error("Không tìm thấy ID nhóm", 404);
             }
 
-            // Calculate total amount from payers (array)
+            // Calculate total amount from payers (array) - handle null payers
             $totalAmount = 0;
-            foreach ($data['payers'] as $payer) {
-                $totalAmount += $payer['paymentAmount'];
+            if (!empty($data['payers'])) {
+                foreach ($data['payers'] as $payer) {
+                    $totalAmount += $payer['paymentAmount'];
+                }
             }
 
             // Update the spending history record
@@ -534,14 +536,16 @@ class GroupRepository implements GroupInterface
                 'note' => $data['note'] ?? null,
             ]);
 
-            // Delete existing payers and create new ones
+            // Delete existing payers and create new ones (only if payers provided)
             TripPayer::where('trip_spending_history_id', $spendingHistory->id)->delete();
-            foreach ($data['payers'] as $payer) {
-                TripPayer::create([
-                    'trip_spending_history_id' => $spendingHistory->id,
-                    'user_id' => $payer['userId'],
-                    'payment_amount' => $payer['paymentAmount'],
-                ]);
+            if (!empty($data['payers'])) {
+                foreach ($data['payers'] as $payer) {
+                    TripPayer::create([
+                        'trip_spending_history_id' => $spendingHistory->id,
+                        'user_id' => $payer['userId'],
+                        'payment_amount' => $payer['paymentAmount'],
+                    ]);
+                }
             }
 
             // Delete existing senders and create new ones
@@ -558,7 +562,7 @@ class GroupRepository implements GroupInterface
             DB::commit();
 
             // Return the updated activity with basic details
-            return $this->success("Activity updated successfully", [
+            return $this->success("Cập nhật thành công", [
                 'id' => is_numeric($spendingHistory->id) ? (int) $spendingHistory->id : null,
                 'groupId' => is_numeric($spendingHistory->trip_id) ? (int) $spendingHistory->trip_id : null,
                 'name' => $spendingHistory->name ?? null,
@@ -589,7 +593,7 @@ class GroupRepository implements GroupInterface
         try {
             // Validate that $groupId is numeric and positive
             if (!is_numeric($groupId) || $groupId <= 0) {
-                return $this->error("Invalid group ID: $groupId. ID must be a positive number.", 400);
+                return $this->error("ID nhóm phải là số.", 400);
             }
 
             // Find the group
@@ -605,17 +609,17 @@ class GroupRepository implements GroupInterface
                 // Verify user exists
                 $user = User::find($userId);
                 if (!$user) {
-                    return $this->error("User with ID $userId not found", 404);
+                    return $this->error("Không tìm thấy người dùng", 404);
                 }
             } elseif (isset($data['userName']) && $data['userName']) {
                 // Find user by userName (assuming it's full_name field)
                 $user = User::where('full_name', $data['userName'])->first();
                 if (!$user) {
-                    return $this->error("User with name '{$data['userName']}' not found", 404);
+                    return $this->error("Không tìm thấy người dùng", 404);
                 }
                 $userId = $user->id;
             } else {
-                return $this->error("Either userId or userName must be provided", 400);
+                return $this->error("Chưa cung cấp thông tin người dùng", 400);
             }
 
             // Check if user is already a member of the group
@@ -625,7 +629,7 @@ class GroupRepository implements GroupInterface
                 ->first();
 
             if ($existingMember) {
-                return $this->error("User is already a member of this group", 409);
+                return $this->error("Người dùng đã tồn tại trong nhóm", 409);
             }
 
             // Add user to group
@@ -640,14 +644,14 @@ class GroupRepository implements GroupInterface
             $processedActivities = [];
             foreach ($data['groupActivities'] as $activityData) {
                 $activityId = $activityData['groupActivityId'];
-                
+
                 // Verify activity exists and belongs to the group
                 $activity = TripSpendingHistory::where('id', $activityId)
                     ->where('trip_id', $groupId)
                     ->first();
-                
+
                 if (!$activity) {
-                    return $this->error("Activity with ID $activityId not found in group $groupId", 404);
+                    return $this->error("Hoạt động không tồn tại trong nhóm", 404);
                 }
 
                 // If senders are provided, add them to the activity
@@ -679,7 +683,7 @@ class GroupRepository implements GroupInterface
 
             DB::commit();
 
-            return $this->success("Member added to group successfully", [
+            return $this->success("Thêm thành viên thành công", [
                 'groupId' => $groupId,
                 'userId' => $userId,
                 'userName' => $user->full_name ?? null,
@@ -706,18 +710,18 @@ class GroupRepository implements GroupInterface
         try {
             // Validate that $groupId is numeric and positive
             if (!is_numeric($groupId) || $groupId <= 0) {
-                return $this->error("Invalid group ID: $groupId. ID must be a positive number.", 400);
+                return $this->error("ID nhóm phải là số.", 400);
             }
 
             // Find the group
             $trip = Trip::find($groupId);
             if (!$trip) {
-                return $this->error("Group with ID $groupId not found", 404);
+                return $this->error("Không tìm thấy nhóm", 404);
             }
 
             // Check if group is already finished
             if ($trip->status === 'done') {
-                return $this->error("Group is already finished", 409);
+                return $this->error("Nhóm đã kết thúc", 409);
             }
 
             // Update group status to 'done'
@@ -727,7 +731,7 @@ class GroupRepository implements GroupInterface
 
             DB::commit();
 
-            return $this->success("Group finished successfully", [
+            return $this->success("Kết thúc thành công", [
                 'groupId' => $groupId,
                 'name' => $trip->name,
                 'status' => $trip->status,
@@ -752,18 +756,19 @@ class GroupRepository implements GroupInterface
         DB::beginTransaction();
         try {
             // Validate that userIds and userNames arrays have the same length
-            if (count($data['userIds']) !== count($data['userNames'])) {
-                return $this->error("userIds and userNames arrays must have the same length", 422);
-            }
+            // if (count($data['userIds']) !== count($data['userNames'])) {
+            //     return $this->error("userIds and userNames arrays must have the same length", 422);
+            // }
 
             // Verify all users exist
             $userIds = $data['userIds'];
+            $userNames = $data['userNames'];
             $existingUsers = User::whereIn('id', $userIds)->get();
-            
+//            $existingUserNames = User::whereIn('full_name', $userNames)->get();
             if ($existingUsers->count() !== count($userIds)) {
                 $foundIds = $existingUsers->pluck('id')->toArray();
                 $missingIds = array_diff($userIds, $foundIds);
-                return $this->error("Users with IDs " . implode(', ', $missingIds) . " not found", 404);
+                return $this->error("Không tìm thấy người dùng", 404);
             }
 
             // Create the group
@@ -771,16 +776,40 @@ class GroupRepository implements GroupInterface
                 'name' => $data['name'],
                 'status' => 'active',
                 'created_by' => auth()->id() ?? 1, // Use user ID 1 as default if not authenticated
-                'key_member_id' => $userIds[0], // Use first user as key member
+                'key_member_id' => Auth::user()->id,
                 'group_chat_id' => $data['groupChatId'] ?? null,
             ]);
 
             // Add users to the group
             $members = [];
-            for ($i = 0; $i < count($userIds); $i++) {
-                $userId = $userIds[$i];
-                $userName = $data['userNames'][$i];
-                
+            // for ($i = 0; $i < count($userIds); $i++) {
+            //     $userId = $userIds[$i];
+            //     $userName = $data['userNames'][$i];
+
+            //     // Add user to group
+            //     DB::table('trip_users')->insert([
+            //         'trip_id' => $trip->id,
+            //         'user_id' => $userId,
+            //         'advance' => null,
+            //         'created_at' => now(),
+            //     ]);
+
+            //     $members[] = [
+            //         'userId' => $userId,
+            //         'userName' => $userName,
+            //     ];
+            // }
+
+            for ($i = 0; $i < count($userNames); $i++) {
+                $userName = $userNames[$i];
+
+                $userId = DB::table('users')->insertGetId(
+                    [
+                        'full_name' => $userName,
+                        'is_temporary' => 1,
+                        'created_at' => now()
+                    ]
+                );
                 // Add user to group
                 DB::table('trip_users')->insert([
                     'trip_id' => $trip->id,
@@ -797,7 +826,7 @@ class GroupRepository implements GroupInterface
 
             DB::commit();
 
-            return $this->success("Group created successfully", [
+            return $this->success("Tạo nhóm thành công", [
                 'id' => $trip->id,
                 'name' => $trip->name,
                 'status' => $trip->status,
@@ -820,18 +849,26 @@ class GroupRepository implements GroupInterface
     /**
      * Get group report
      */
-    public function getGroupReport($groupId)
+    public function getGroupReport($groupId, $startDate = null, $endDate = null)
     {
         try {
             // Validate that $groupId is numeric and positive
             if (!is_numeric($groupId) || $groupId <= 0) {
-                return $this->error("Invalid group ID: $groupId. ID must be a positive number.", 400);
+                return $this->error("ID nhóm phải là số.", 400);
+            }
+
+            // Validate date format if provided
+            if ($startDate && !$this->isValidDateTime($startDate)) {
+                return $this->error("Sai format DateTime: Y-m-d H:i:s", 400);
+            }
+            if ($endDate && !$this->isValidDateTime($endDate)) {
+                return $this->error("Sai format DateTime: Y-m-d H:i:s", 400);
             }
 
             // Find the group
             $trip = Trip::find($groupId);
             if (!$trip) {
-                return $this->error("Group with ID $groupId not found", 404);
+                return $this->error("Không tìm thấy nhóm", 404);
             }
 
             // Get all members of the group
@@ -841,11 +878,20 @@ class GroupRepository implements GroupInterface
                 ->toArray();
 
             if (empty($members)) {
-                return $this->success("Get trip report success", []);
+                return $this->success("Lấy thông tin thành công", []);
             }
 
-            // Get spending history for this group
-            $spendingHistory = TripSpendingHistory::where('trip_id', $groupId)->get();
+            // Get spending history for this group with date filter
+            $spendingHistoryQuery = TripSpendingHistory::where('trip_id', $groupId);
+
+            if ($startDate) {
+                $spendingHistoryQuery->where('created_at', '>=', $startDate);
+            }
+            if ($endDate) {
+                $spendingHistoryQuery->where('created_at', '<=', $endDate);
+            }
+
+            $spendingHistory = $spendingHistoryQuery->get();
 
             // Calculate amount spent and paid for each user
             $reportData = [];
@@ -885,7 +931,7 @@ class GroupRepository implements GroupInterface
                 ];
             }
 
-            return $this->success("Get trip report success", $reportData);
+            return $this->success("Lấy thông tin thành công", $reportData);
         } catch(\Exception $e) {
             $errorCode = $e->getCode();
             // Ensure error code is a valid HTTP status code
@@ -894,6 +940,16 @@ class GroupRepository implements GroupInterface
             }
             return $this->error($e->getMessage(), $errorCode);
         }
+    }
+
+    /**
+     * Validate date time format
+     */
+    private function isValidDateTime($dateTime)
+    {
+        $format = 'Y-m-d H:i:s';
+        $d = \DateTime::createFromFormat($format, $dateTime);
+        return $d && $d->format($format) === $dateTime;
     }
 
 }

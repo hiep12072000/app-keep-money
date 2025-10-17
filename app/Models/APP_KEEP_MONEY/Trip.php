@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\APP_KEEP_MONEY;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Trip extends Model
 {
-    protected $table = 'trips';
+    protected $table = 'akm_trips';
 
     protected $fillable = [
         'name',

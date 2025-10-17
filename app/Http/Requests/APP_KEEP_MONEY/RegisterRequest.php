@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\APP_KEEP_MONEY;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Contracts\Validation\Validator;
 
 class RegisterRequest extends FormRequest
 {
@@ -27,8 +27,8 @@ class RegisterRequest extends FormRequest
     {
         return [
             'fullName' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'required|string|regex:/^[0-9]{10,11}$/|unique:users',
+            'email' => 'required|string|email|max:255|unique:akm_users',
+            'phone' => 'required|string|regex:/^[0-9]{10,11}$/|unique:akm_users',
             'password' => 'required|string|min:6',
         ];
     }
@@ -44,18 +44,18 @@ class RegisterRequest extends FormRequest
             'fullName.required' => 'Họ tên là bắt buộc',
             'fullName.string' => 'Họ tên phải là chuỗi',
             'fullName.max' => 'Họ tên không được vượt quá 255 ký tự',
-            
+
             'email.required' => 'Email là bắt buộc',
             'email.string' => 'Email phải là chuỗi',
             'email.email' => 'Email không đúng định dạng',
             'email.max' => 'Email không được vượt quá 255 ký tự',
             'email.unique' => 'Email này đã được sử dụng',
-            
+
             'phone.required' => 'Số điện thoại là bắt buộc',
             'phone.string' => 'Số điện thoại phải là chuỗi',
             'phone.regex' => 'Số điện thoại phải có 10-11 chữ số',
             'phone.unique' => 'Số điện thoại này đã được sử dụng',
-            
+
             'password.required' => 'Mật khẩu là bắt buộc',
             'password.string' => 'Mật khẩu phải là chuỗi',
             'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',

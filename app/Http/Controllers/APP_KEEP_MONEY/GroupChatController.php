@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\APP_KEEP_MONEY;
 
 use App\Http\Controllers\Controller;
-use App\Repositories\GroupChatRepository;
+use App\Repositories\APP_KEEP_MONEY\GroupChatRepository;
 use App\Traits\ResponseAPI;
 use Illuminate\Http\Request;
 
@@ -34,7 +34,7 @@ class GroupChatController extends Controller
 
             return $this->groupChatRepository->createJoinLink($data['groupId']);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error('Validation failed: ' . implode(', ', $e->validator->errors()->all()), 422);
+            return $this->error('Không thể xác thực: ' . implode(', ', $e->validator->errors()->all()), 422);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -54,9 +54,9 @@ class GroupChatController extends Controller
             if (!is_numeric($groupId)) {
                 return $this->error('Invalid group ID format. Group ID must be numeric.', 400);
             }
-            
+
             $groupId = (int) $groupId;
-            
+
             // Validate code
             if (empty($code) || !is_string($code)) {
                 return $this->error('Invalid code format. Code must be a non-empty string.', 400);
@@ -80,11 +80,11 @@ class GroupChatController extends Controller
         try {
             // Validate that $conversationId is numeric
             if (!is_numeric($conversationId)) {
-                return $this->error('Invalid conversation ID format. ID must be numeric.', 400);
+                return $this->error('ID nhóm chat phải là số', 400);
             }
-            
+
             $conversationId = (int) $conversationId;
-            
+
             // Validate request data
             $data = $request->validate([
                 'isSeen' => 'required|boolean',
@@ -92,7 +92,7 @@ class GroupChatController extends Controller
 
             return $this->groupChatRepository->updateSeenStatus($conversationId, $data['isSeen']);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error('Validation failed: ' . implode(', ', $e->validator->errors()->all()), 422);
+            return $this->error('Không thể xác thực: ' . implode(', ', $e->validator->errors()->all()), 422);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -110,14 +110,14 @@ class GroupChatController extends Controller
         try {
             // Validate that $id is numeric
             if (!is_numeric($id)) {
-                return $this->error('Invalid ID format. ID must be numeric.', 400);
+                return $this->error('Id nhóm chat phải là số', 400);
             }
-            
+
             $id = (int) $id;
-            
+
             // Validate type parameter
             if (!in_array($type, ['GROUP', 'PRIVATE'])) {
-                return $this->error('Invalid type. Type must be GROUP or PRIVATE.', 400);
+                return $this->error('Chỉ có thể chọn type GROUP hoặc PRIVATE ', 400);
             }
 
             return $this->groupChatRepository->getChatDetail($type, $id);
@@ -142,7 +142,7 @@ class GroupChatController extends Controller
 
             return $this->groupChatRepository->searchGroupChat($data['keyword']);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error('Validation failed: ' . implode(', ', $e->validator->errors()->all()), 422);
+            return $this->error('Không thể xác thực: ' . implode(', ', $e->validator->errors()->all()), 422);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -164,7 +164,7 @@ class GroupChatController extends Controller
 
             return $this->groupChatRepository->getListGroupChat($data['pageNumber']);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error('Validation failed: ' . implode(', ', $e->validator->errors()->all()), 422);
+            return $this->error('Không thể xác thực: ' . implode(', ', $e->validator->errors()->all()), 422);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -182,11 +182,11 @@ class GroupChatController extends Controller
         try {
             // Validate that $groupChatId is numeric
             if (!is_numeric($groupChatId)) {
-                return $this->error('Invalid group chat ID format. ID must be numeric.', 400);
+                return $this->error('Id nhóm chat phải là số', 400);
             }
-            
+
             $groupChatId = (int) $groupChatId;
-            
+
             // Validate request data
             $data = $request->validate([
                 'name' => 'nullable|string|max:255',
@@ -199,7 +199,7 @@ class GroupChatController extends Controller
 
             return $this->groupChatRepository->updateGroupChat($groupChatId, $data);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error('Validation failed: ' . implode(', ', $e->validator->errors()->all()), 422);
+            return $this->error('Không thể xác thực: ' . implode(', ', $e->validator->errors()->all()), 422);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -217,12 +217,12 @@ class GroupChatController extends Controller
         try {
             // Validate that both IDs are numeric
             if (!is_numeric($groupChatId)) {
-                return $this->error('Invalid group chat ID format. ID must be numeric.', 400);
+                return $this->error('Id nhóm chat phải là số', 400);
             }
             if (!is_numeric($userId)) {
-                return $this->error('Invalid user ID format. ID must be numeric.', 400);
+                return $this->error('Id người dùng phải là số', 400);
             }
-            
+
             $groupChatId = (int) $groupChatId;
             $userId = (int) $userId;
 
@@ -244,12 +244,12 @@ class GroupChatController extends Controller
         try {
             // Validate that both IDs are numeric
             if (!is_numeric($groupChatId)) {
-                return $this->error('Invalid group chat ID format. ID must be numeric.', 400);
+                return $this->error('Id nhóm chat phải là số', 400);
             }
             if (!is_numeric($userId)) {
-                return $this->error('Invalid user ID format. ID must be numeric.', 400);
+                return $this->error('Id người dùng phải là số', 400);
             }
-            
+
             $groupChatId = (int) $groupChatId;
             $userId = (int) $userId;
 
@@ -280,7 +280,7 @@ class GroupChatController extends Controller
 
             return $this->groupChatRepository->createGroupChat($data);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error('Validation failed: ' . implode(', ', $e->validator->errors()->all()), 422);
+            return $this->error('Không thể xác thực: ' . implode(', ', $e->validator->errors()->all()), 422);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }

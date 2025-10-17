@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\APP_KEEP_MONEY;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Contracts\Validation\Validator;
 
-class VerifyOtpRequest extends FormRequest
+class SendEmailRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,7 +27,6 @@ class VerifyOtpRequest extends FormRequest
     {
         return [
             'email' => 'required|string|email|max:255|exists:users,email',
-            'otp' => 'required|string|size:6|regex:/^[0-9]{6}$/',
         ];
     }
 
@@ -44,11 +43,6 @@ class VerifyOtpRequest extends FormRequest
             'email.email' => 'Email không đúng định dạng',
             'email.max' => 'Email không được vượt quá 255 ký tự',
             'email.exists' => 'Email này không tồn tại trong hệ thống',
-            
-            'otp.required' => 'Mã OTP là bắt buộc',
-            'otp.string' => 'Mã OTP phải là chuỗi',
-            'otp.size' => 'Mã OTP phải có đúng 6 ký tự',
-            'otp.regex' => 'Mã OTP phải là 6 chữ số',
         ];
     }
 

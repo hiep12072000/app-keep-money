@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\APP_KEEP_MONEY;
 
 use Illuminate\Database\Eloquent\Model;
 
 class TripSpendingHistory extends Model
 {
-    protected $table = 'trip_spending_history';
+    protected $table = 'akm_trip_spending_history';
 
     protected $fillable = [
         'trip_id',

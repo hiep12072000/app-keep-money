@@ -25,21 +25,21 @@ class FileController extends Controller
         try {
             // Lấy user hiện tại từ JWT token
             $user = Auth::guard('api')->user();
-            
+
             $file = $request->file('file');
-            
+
             // Tạo tên file unique
             $fileName = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
-            
+
             // Tạo thư mục theo năm/tháng
             $directory = 'uploads/images/' . date('Y/m');
-            
+
             // Lưu file vào storage/app/public
             $filePath = $file->storeAs($directory, $fileName, 'public');
-            
+
             // Tạo full URL
             $fullUrl = url('storage/' . $filePath);
-            
+
             // Thông tin file
             $fileInfo = [
                 'original_name' => $file->getClientOriginalName(),

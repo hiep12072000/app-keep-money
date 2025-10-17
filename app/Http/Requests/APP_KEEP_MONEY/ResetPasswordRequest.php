@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\APP_KEEP_MONEY;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Contracts\Validation\Validator;
 
 class ResetPasswordRequest extends FormRequest
 {
@@ -44,7 +44,7 @@ class ResetPasswordRequest extends FormRequest
             'email.email' => 'Email không đúng định dạng',
             'email.max' => 'Email không được vượt quá 255 ký tự',
             'email.exists' => 'Email này không tồn tại trong hệ thống',
-            
+
             'password.required' => 'Mật khẩu mới là bắt buộc',
             'password.string' => 'Mật khẩu phải là chuỗi',
             'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',

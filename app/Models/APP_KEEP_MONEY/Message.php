@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\APP_KEEP_MONEY;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
-    protected $table = 'messages';
+    protected $table = 'akm_messages';
 
     protected $fillable = [
         'user_id',

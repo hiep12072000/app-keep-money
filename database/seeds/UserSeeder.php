@@ -1,7 +1,7 @@
 <?php
 
+use App\Models\APP_KEEP_MONEY\User;
 use Illuminate\Database\Seeder;
-use App\Models\User;
 
 class UserSeeder extends Seeder
 {
