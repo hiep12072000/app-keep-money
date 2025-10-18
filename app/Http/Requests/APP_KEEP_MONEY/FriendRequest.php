@@ -45,3 +45,4 @@ class FriendRequest extends FormRequest
 }
 
 
+

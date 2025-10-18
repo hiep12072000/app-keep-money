@@ -385,7 +385,7 @@ class GroupRepository implements GroupInterface
                     if ($endDate && $payer->created_at && $payer->created_at > $endDate) {
                         continue;
                     }
-                    
+
                     $payers[] = [
                         'id' => is_numeric($payer->id) ? (int) $payer->id : null,
                         'groupActivityId' => is_numeric($activity->id) ? (int) $activity->id : null,
@@ -408,7 +408,7 @@ class GroupRepository implements GroupInterface
                     if ($endDate && $spendingUser->created_at && $spendingUser->created_at > $endDate) {
                         continue;
                     }
-                    
+
                     $senders[] = [
                         'id' => is_numeric($spendingUser->id) ? (int) $spendingUser->id : null,
                         'groupActivityId' => is_numeric($activity->id) ? (int) $activity->id : null,
@@ -1025,6 +1025,8 @@ class GroupRepository implements GroupInterface
                 return $this->error("Bạn không phải là người tạo nhóm", 400);
             }
 
+            $isUpdate = false;
+
             foreach ($usersUpdate as $userUpdate){
                 if(!isset($userUpdate['userId']) && is_numeric($userUpdate['userId']))
                 {
@@ -1036,17 +1038,20 @@ class GroupRepository implements GroupInterface
                     return $this->error("Id người dùng không hợp lệ", 400);
                 }
 
-                DB::table('akm_trip_users')
+                $update = DB::table('akm_trip_users')
                     ->where('user_id', $userUpdate['userId'])
                     ->where('trip_id', $groupId)
                     ->update([
                         'advance' => $userUpdate['advance'],
                     ]);
+                if($update){
+                    $isUpdate = true;
+                }
             }
 
             DB::commit();
 
-            return $this->success("Cập nhật thông tin thành công", $groupId);
+            return $isUpdate ? $this->success("Cập nhật thông tin thành công", $groupId) : $this->error("Không tìm thấy người dùng thuộc nhóm", 400);
         }
         catch(\Exception $e) {
             $errorCode = $e->getCode();
