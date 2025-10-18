@@ -333,12 +333,20 @@ class GroupRepository implements GroupInterface
     /**
      * Get group activity detail
      */
-    public function getActivityDetail($activityId)
+    public function getActivityDetail($activityId, $startDate = null, $endDate = null)
     {
         try {
             // Validate that $activityId is numeric and positive
             if (!is_numeric($activityId) || $activityId <= 0) {
                 return $this->error("ID hoạt động phải là số", 400);
+            }
+
+            // Validate date format if provided
+            if ($startDate && !$this->isValidDateTime($startDate)) {
+                return $this->error("Sai format DateTime: Y-m-d H:i:s", 400);
+            }
+            if ($endDate && !$this->isValidDateTime($endDate)) {
+                return $this->error("Sai format DateTime: Y-m-d H:i:s", 400);
             }
 
             $activity = TripSpendingHistory::with([
@@ -366,30 +374,48 @@ class GroupRepository implements GroupInterface
                 ];
             }
 
-            // Format payers
+            // Format payers with date filter
             $payers = [];
             if ($activity->payers) {
                 foreach ($activity->payers as $payer) {
+                    // Apply date filter if provided
+                    if ($startDate && $payer->created_at && $payer->created_at < $startDate) {
+                        continue;
+                    }
+                    if ($endDate && $payer->created_at && $payer->created_at > $endDate) {
+                        continue;
+                    }
+                    
                     $payers[] = [
                         'id' => is_numeric($payer->id) ? (int) $payer->id : null,
                         'groupActivityId' => is_numeric($activity->id) ? (int) $activity->id : null,
                         'userId' => is_numeric($payer->user_id) ? (int) $payer->user_id : null,
                         'userName' => $payer->user->full_name ?? null,
                         'amount' => is_numeric($payer->payment_amount) ? (float) $payer->payment_amount : 0.0,
+                        'createdAt' => $payer->created_at ? $payer->created_at->format('Y-m-d\TH:i:s') : null,
                     ];
                 }
             }
 
-            // Format senders (spendingUsers)
+            // Format senders (spendingUsers) with date filter
             $senders = [];
             if ($activity->spendingUsers) {
                 foreach ($activity->spendingUsers as $spendingUser) {
+                    // Apply date filter if provided
+                    if ($startDate && $spendingUser->created_at && $spendingUser->created_at < $startDate) {
+                        continue;
+                    }
+                    if ($endDate && $spendingUser->created_at && $spendingUser->created_at > $endDate) {
+                        continue;
+                    }
+                    
                     $senders[] = [
                         'id' => is_numeric($spendingUser->id) ? (int) $spendingUser->id : null,
                         'groupActivityId' => is_numeric($activity->id) ? (int) $activity->id : null,
                         'userId' => is_numeric($spendingUser->user_id) ? (int) $spendingUser->user_id : null,
                         'userName' => $spendingUser->user->full_name ?? null,
                         'amount' => is_numeric($spendingUser->amount) ? (float) $spendingUser->amount : 0.0,
+                        'createdAt' => $spendingUser->created_at ? $spendingUser->created_at->format('Y-m-d\TH:i:s') : null,
                     ];
                 }
             }
@@ -987,8 +1013,10 @@ class GroupRepository implements GroupInterface
     public function updateAdvance($request, $groupId){
         DB::beginTransaction();
         try {
-            $userIds = $request->userIds;
-            $advance = $request->advance;
+            $usersUpdate = $request->userUpdate;
+            if(count($usersUpdate) < 1){
+                return $this->error("Hãy chọn người để thêm tiền", 400);
+            }
 
             $userIdCurrent = Auth::user()->id;
             $trip = Trip::find($groupId);
@@ -997,17 +1025,28 @@ class GroupRepository implements GroupInterface
                 return $this->error("Bạn không phải là người tạo nhóm", 400);
             }
 
+            foreach ($usersUpdate as $userUpdate){
+                if(!isset($userUpdate['userId']) && is_numeric($userUpdate['userId']))
+                {
+                    return $this->error("Id người dùng không hợp lệ", 400);
+                }
 
-            DB::table('akm_trip_users')
-                ->whereIn('user_id', $userIds)
-                ->where('trip_id', $groupId)
-                ->update([
-                    'advance' => $advance,
-                ]);
+                if(!isset($userUpdate['advance']) && is_numeric($userUpdate['advance']))
+                {
+                    return $this->error("Id người dùng không hợp lệ", 400);
+                }
+
+                DB::table('akm_trip_users')
+                    ->where('user_id', $userUpdate['userId'])
+                    ->where('trip_id', $groupId)
+                    ->update([
+                        'advance' => $userUpdate['advance'],
+                    ]);
+            }
 
             DB::commit();
 
-            return $this->success("Lấy thông tin thành công", $groupId);
+            return $this->success("Cập nhật thông tin thành công", $groupId);
         }
         catch(\Exception $e) {
             $errorCode = $e->getCode();

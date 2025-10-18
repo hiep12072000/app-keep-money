@@ -89,11 +89,13 @@ interface GroupInterface
      * Get group activity detail
      *
      * @param   integer     $activityId
+     * @param   string|null $startDate
+     * @param   string|null $endDate
      *
      * @method  GET api/group/activity/detail/{activityId}
      * @access  public
      */
-    public function getActivityDetail($activityId);
+    public function getActivityDetail($activityId, $startDate = null, $endDate = null);
 
     /**
      * Create group activity

@@ -17,7 +17,11 @@ class UserRepository implements UserInterface
     {
         try {
             // Query builder để lấy users
-            $query = User::query();
+            $query = User::query()
+                ->whereNotNull('email')
+                ->where('email', '!=', '')
+                ->whereNotNull('phone')
+                ->where('phone', '!=', '');
 
             // Đếm tổng số records
             $total = $query->count();

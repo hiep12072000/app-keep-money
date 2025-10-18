@@ -202,7 +202,12 @@ class GroupController extends Controller
             }
 
             $activityId = (int) $activityId;
-            return $this->groupRepository->getActivityDetail($activityId);
+
+            // Get date filters from request
+            $startDate = $request->query('startDate');
+            $endDate = $request->query('endDate');
+
+            return $this->groupRepository->getActivityDetail($activityId, $startDate, $endDate);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
@@ -414,15 +419,6 @@ class GroupController extends Controller
 
             $groupId = (int) $groupId;
 
-            $userIds = $request->userIds;
-
-            if(count($userIds) < 1){
-                return $this->error('Bạn chưa chọn thành viên', 400);
-            }
-
-            if(!isset($request->advance) && is_numeric($request->advance) && $request->advance < 0){
-                return $this->error('Số tiền không hợp lệ', 400);
-            }
             return $this->groupRepository->updateAdvance($request, $groupId);
         } catch (\Exception $e) {
             return $this->error('Có lỗi xảy ra: ' . $e->getMessage(), 500);
