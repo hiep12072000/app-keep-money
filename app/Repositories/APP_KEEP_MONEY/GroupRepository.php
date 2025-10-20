@@ -7,6 +7,7 @@ use App\Models\APP_KEEP_MONEY\Trip;
 use App\Models\APP_KEEP_MONEY\TripPayer;
 use App\Models\APP_KEEP_MONEY\TripSpendingHistory;
 use App\Models\APP_KEEP_MONEY\TripSpendingHistoryUser;
+use App\Models\APP_KEEP_MONEY\TripUser;
 use App\Models\APP_KEEP_MONEY\User;
 use App\Traits\ResponseAPI;
 use Illuminate\Support\Facades\Auth;
@@ -884,7 +885,7 @@ class GroupRepository implements GroupInterface
     /**
      * Get group report
      */
-    public function getGroupReport($groupId, $startDate = null, $endDate = null, $page = 1, $perPage = 10)
+    public function getGroupReport($groupId, $startDate = null, $endDate = null)
     {
         try {
             // Validate that $groupId is numeric and positive
@@ -915,21 +916,12 @@ class GroupRepository implements GroupInterface
 
             if ($totalMembers == 0) {
                 return $this->success("Lấy thông tin thành công", [
-                    'data' => [],
-                    'totalPage' => 0,
-                    'total' => 0,
-                    'currentPage' => (int) $page,
+                    'data' => []
                 ]);
             }
 
-            // Tính toán pagination
-            $totalPage = ceil($totalMembers / $perPage);
-            $offset = ($page - 1) * $perPage;
-
             // Lấy members với pagination
-            $members = $membersQuery->offset($offset)
-                                  ->limit($perPage)
-                                  ->pluck('user_id')
+            $members = $membersQuery->pluck('user_id')
                                   ->toArray();
 
             // Get spending history for this group with date filter
@@ -957,13 +949,21 @@ class GroupRepository implements GroupInterface
                 $spentAmount = TripSpendingHistoryUser::whereIn('trip_spending_history_id', $spendingHistory->pluck('id'))
                     ->where('user_id', $userId)
                     ->sum('amount');
-                $amountSpent = (float) $spentAmount;
 
+                $amountSpent = (float) $spentAmount;
                 // Calculate amount paid (from payers)
-                $paidAmount = TripPayer::whereIn('trip_spending_history_id', $spendingHistory->pluck('id'))
-                    ->where('user_id', $userId)
-                    ->sum('payment_amount');
-                $amountPaid = (float) $paidAmount;
+                $amountAdvanceQuery = TripUser::where('trip_id', $groupId)
+                    ->where('user_id', $userId);
+
+                if ($startDate) {
+                    $amountAdvanceQuery->where('created_at', '>=', $startDate);
+                }
+                if ($endDate) {
+                    $amountAdvanceQuery->where('created_at', '<=', $endDate);
+                }
+                $amountAdvance = $amountAdvanceQuery->sum('advance');
+
+                $amountAdvance = (float) $amountAdvance;
 
                 $reportData[] = [
                     'userDTO' => [
@@ -978,15 +978,12 @@ class GroupRepository implements GroupInterface
                         'lastOnlineAt' => $user->last_online_at ? $user->last_online_at->format('Y-m-d\TH:i:s.u') : null,
                     ],
                     'amountSpent' => $amountSpent,
-                    'amountPaid' => $amountPaid,
+                    'amountAdvanced' => $amountAdvance,
                 ];
             }
 
             $responseData = [
-                'data' => $reportData,
-                'totalPage' => $totalPage,
-                'total' => $totalMembers,
-                'currentPage' => (int) $page,
+                'data' => $reportData
             ];
 
             return $this->success("Lấy thông tin thành công", $responseData);

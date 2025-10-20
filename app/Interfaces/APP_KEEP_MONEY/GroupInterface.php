@@ -161,6 +161,6 @@ interface GroupInterface
      * @method  GET api/group/get-group-report/{groupId}
      * @access  public
      */
-    public function getGroupReport($groupId, $startDate = null, $endDate = null, $page = 1, $perPage = 10);
+    public function getGroupReport($groupId, $startDate = null, $endDate = null);
     public function updateAdvance(Request $request, $groupId);
 }
